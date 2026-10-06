@@ -139,7 +139,13 @@ impl ChatWidget {
             return (false, None);
         }
         self.empty_state_animation.borrow_mut().dismiss();
-        if self.input_queue.rate_limit_recovery_pending || self.pending_image_submission.is_some() {
+        if self.input_queue.rate_limit_recovery_pending
+            || self.pending_image_submission.is_some()
+            || self.jev_auto.pending.is_some()
+            || (self.jev_auto.enabled
+                && self.turn_lifecycle.agent_turn_running
+                && source == UserMessageSource::Prompt)
+        {
             let model_prompt = source == UserMessageSource::Prompt
                 && (shell_escape_policy == ShellEscapePolicy::Disallow
                     || !user_message.text.starts_with('!'));
@@ -198,6 +204,7 @@ impl ChatWidget {
             return (false, None);
         }
         if (!user_message.local_images.is_empty() || !user_message.remote_image_urls.is_empty())
+            && (!self.jev_auto.enabled || self.jev_auto.applying)
             && !self.current_model_supports_images()
         {
             let UserMessage {
@@ -215,6 +222,24 @@ impl ChatWidget {
                 remote_image_urls,
             );
             return (false, None);
+        }
+        if self.jev_auto.enabled
+            && !self.jev_auto.applying
+            && source == UserMessageSource::Prompt
+            && (shell_escape_policy == ShellEscapePolicy::Disallow
+                || !user_message.text.starts_with('!'))
+            && (prepared_images.is_some()
+                || !self.snapshot_local_images
+                || user_message.local_images.is_empty())
+        {
+            self.begin_jev_route(
+                user_message,
+                history_record,
+                shell_escape_policy,
+                source,
+                prepared_images,
+            );
+            return (true, None);
         }
         let UserMessage {
             text,

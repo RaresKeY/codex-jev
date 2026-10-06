@@ -99,6 +99,15 @@ impl ChatWidget {
         if (self.chat_keymap.interrupt_turn.is_pressed(key_event)
             || key_hint::ctrl(KeyCode::Char('c')).is_press(key_event))
             && self.bottom_pane.no_modal_or_popup_active()
+            && self.jev_auto.pending.is_some()
+        {
+            self.cancel_jev_route();
+            return KeyEventAction::None;
+        }
+
+        if (self.chat_keymap.interrupt_turn.is_pressed(key_event)
+            || key_hint::ctrl(KeyCode::Char('c')).is_press(key_event))
+            && self.bottom_pane.no_modal_or_popup_active()
             && !self.should_handle_vim_insert_escape(key_event)
             && self.pending_image_submission.is_some()
         {

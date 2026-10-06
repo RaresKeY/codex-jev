@@ -318,3 +318,12 @@ Tests and features must support Linux, macOS and Windows unless feature is expli
 
 Codex supports running connected app-server and exec-server on different operating systems. See the
 `$remote-tests` skill for details about integration testing these configurations.
+
+## Codex Jev fork
+
+Read specs/_readme.md before changing fork behavior. Work in this normal checkout.
+Keep the upstream patch small. Fork additions use the upstream Apache 2.0 license.
+Never commit credentials, private chats, raw provider responses, local .env files,
+or build outputs. Keep upstream workflows disabled. Use tools/fork/rust.sh and the
+pinned toolchain for build operations. Install only codex-jev, never replace codex.
+Do not run tests or paid inference unless explicitly requested by the user.

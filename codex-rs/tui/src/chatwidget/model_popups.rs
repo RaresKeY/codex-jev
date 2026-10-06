@@ -144,7 +144,7 @@ impl ChatWidget {
                 SelectionItem {
                     name: preset.display_name.clone(),
                     description,
-                    is_current: model.as_str() == current_model,
+                    is_current: !self.jev_auto.enabled && model.as_str() == current_model,
                     is_default: preset.is_default,
                     secondary_action: if requires_advanced_selection {
                         None
@@ -161,6 +161,9 @@ impl ChatWidget {
                 }
             })
             .collect();
+
+        model_ids.insert(0, "jev-auto".to_string());
+        items.insert(0, self.jev_picker_item());
 
         if !other_presets.is_empty() {
             model_ids.push("All models".to_string());
@@ -244,11 +247,15 @@ impl ChatWidget {
         }
 
         let mut items: Vec<SelectionItem> = Vec::new();
-        let model_ids = presets.iter().map(|preset| preset.model.clone()).collect();
+        let mut model_ids: Vec<String> =
+            presets.iter().map(|preset| preset.model.clone()).collect();
+        model_ids.insert(0, "jev-auto".to_string());
+        items.push(self.jev_picker_item());
         for preset in presets.into_iter() {
             let description =
                 (!preset.description.is_empty()).then_some(preset.description.to_string());
-            let is_current = preset.model.as_str() == self.current_model();
+            let is_current =
+                !self.jev_auto.enabled && preset.model.as_str() == self.current_model();
             let direct_effort = match preset.supported_reasoning_efforts.as_slice() {
                 [] => Some(preset.default_reasoning_effort.clone()),
                 [option] => Some(option.effort.clone()),

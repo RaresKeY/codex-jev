@@ -981,7 +981,15 @@ impl ChatWidget {
             .filter(|_| self.has_chatgpt_account)
             .map(|tier| format!(" {tier}"))
             .unwrap_or_default();
-        format!("{} {label}{service_tier_label}", self.model_display_name())
+        let prefix = if self.jev_auto.enabled {
+            "Auto (Jev) · "
+        } else {
+            ""
+        };
+        format!(
+            "{prefix}{} {label}{service_tier_label}",
+            self.model_display_name()
+        )
     }
 
     /// Computes the compact runtime status label used by word-based status items.

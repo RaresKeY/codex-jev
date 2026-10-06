@@ -993,10 +993,47 @@ impl App {
             AppEvent::FatalExitRequest(message) => {
                 return Ok(AppRunControl::Exit(ExitReason::Fatal(message)));
             }
+            AppEvent::EnableJevAuto => {
+                self.chat_widget.enable_jev_auto();
+            }
+            AppEvent::JevRouteReady { id, thread_id, result } => {
+                if self.chat_widget.thread_id() != thread_id || !self.chat_widget.jev_route_is_current(id) {
+                    return Ok(AppRunControl::Continue);
+                }
+                let result = match result {
+                    Ok(decision) => {
+                        let supported = self.model_catalog.try_list_models().is_ok_and(|models| {
+                            models.iter().any(|preset| preset.model == decision.model
+                                && preset.supported_reasoning_efforts.iter().any(|option| option.effort == decision.effort))
+                        });
+                        if !supported {
+                            Err("Jev chose a model or effort unavailable in this account's catalog.".to_string())
+                        } else if let Some(mut params) = self.active_thread_model_setting_update_params(decision.model.clone()) {
+                            params.effort = Some(decision.effort.clone());
+                            if let Some(mode) = params.collaboration_mode.as_mut() {
+                                mode.settings.model = decision.model.clone();
+                                mode.settings.reasoning_effort = Some(decision.effort.clone());
+                            }
+                            if self.send_thread_settings_update(app_server, params).await {
+                                Ok(decision)
+                            } else {
+                                Err("Model change was not acknowledged. Your message was not sent.".to_string())
+                            }
+                        } else {
+                            Err("Thread is unavailable. Your message was not sent.".to_string())
+                        }
+                    }
+                    Err(error) => Err(error),
+                };
+                self.chat_widget.finish_jev_route(id, result);
+            }
             AppEvent::ImagesPrepared(id) => {
                 self.chat_widget.on_images_prepared(id);
             }
             AppEvent::CodexOp(mut op) => {
+                if matches!(&op, AppCommand::Interrupt) && self.chat_widget.cancel_jev_route() {
+                    return Ok(AppRunControl::Continue);
+                }
                 if let AppCommand::OverrideTurnContext {
                     cwd,
                     approval_policy,
@@ -1938,6 +1975,7 @@ impl App {
                     .await;
             }
             AppEvent::UpdateModel(model) => {
+                self.chat_widget.disable_jev_auto();
                 if self
                     .active_thread_model_setting_update_params(model.clone())
                     .is_some_and(|params| params.permissions.is_some())
@@ -2070,6 +2108,7 @@ impl App {
                 self.chat_widget.open_advanced_reasoning_popup(model);
             }
             AppEvent::ApplyAdvancedReasoning { model, effort } => {
+                self.chat_widget.disable_jev_auto();
                 self.app_event_tx.send(AppEvent::FollowTranscript);
                 if self
                     .active_thread_model_setting_update_params(model.clone())
@@ -2344,6 +2383,7 @@ impl App {
                 }
             }
             AppEvent::SelectSessionModel { model, effort } => {
+                self.chat_widget.disable_jev_auto();
                 self.app_event_tx.send(AppEvent::FollowTranscript);
                 self.select_session_model(app_server, model, effort).await;
             }

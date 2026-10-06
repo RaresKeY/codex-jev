@@ -278,6 +278,12 @@ pub(crate) struct AgentsOverviewThreadRefresh {
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, IntoStaticStr)]
 pub(crate) enum AppEvent {
+    EnableJevAuto,
+    JevRouteReady {
+        id: uuid::Uuid,
+        thread_id: Option<ThreadId>,
+        result: Result<crate::jev_route::JevDecision, String>,
+    },
     SecuritySetupLoaded {
         request_id: uuid::Uuid,
         identity: crate::security_setup::Identity,
