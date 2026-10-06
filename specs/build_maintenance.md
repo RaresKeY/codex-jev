@@ -8,6 +8,8 @@ Apache 2.0 LICENSE, NOTICE and existing third party material are retained.
 keep-id user mapping, task container labels, disposable containers, two default
 build workers, ignored Cargo/target directories, and Rust 1.95. The builder image
 is retained and digest-pinned; intermediate layers are explicitly ephemeral.
+`v8-env.py` reuses upstream codex_package.v8 to download the Codex sandbox V8
+archive/binding pair and verify its checksum against the committed manifest.
 `build.sh` uses a locked dev-small build for CLI and code mode host. No dependencies
 were added by the routing patch. The upstream release tag's Cargo.lock used local
 workspace version 0.0.0; fork lock entries are synchronized to the fork version.
