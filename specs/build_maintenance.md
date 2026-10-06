@@ -27,3 +27,10 @@ fork version, local workspace lock versions, disabled workflow locations, helper
 packaging, model picker/submit hooks and routing contract before building and
 installing a new revision. Upstream workflows are preserved as disabled sources.
 The installer retains current installed runtimes; build intermediates are reproducible.
+
+Initial build completed successfully on Linux x86_64 with the pinned Podman
+Rust 1.95 toolchain: `tools/fork/build.sh`, dev-small, both CLI and code mode
+host. An upstream unused-import warning in codex-core is preserved. Tests and
+paid routing were not run. `package.sh` creates one current release archive and
+SHA256SUMS; publish the archive, verify remote asset digests and remove generated
+local release/build outputs while retaining the installed runtime and build tools.
