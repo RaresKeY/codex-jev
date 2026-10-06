@@ -10,9 +10,10 @@ build workers, ignored Cargo/target directories, and Rust 1.95. The builder imag
 is retained and digest-pinned; intermediate layers are explicitly ephemeral.
 `v8-env.py` reuses upstream codex_package.v8 to download the Codex sandbox V8
 archive/binding pair and verify its checksum against the committed manifest.
-`build.sh` uses a locked dev-small build for CLI and code mode host. No dependencies
-were added by the routing patch. The upstream release tag's Cargo.lock used local
-workspace version 0.0.0; fork lock entries are synchronized to the fork version.
+`build.sh` uses a locked dev-small build for CLI and code mode host. The local
+comparison sets `opt-level = 3`; the published initial prerelease used 0. No
+dependencies were added by the routing patch. The upstream release tag's Cargo.lock
+used local workspace version 0.0.0; fork lock entries are synchronized to the fork version.
 
 `install.sh` installs only codex-jev under the user's .local/bin and versioned
 XDG data directory, plus code-mode-host, route helper, policy and license notices.
@@ -34,3 +35,9 @@ host. An upstream unused-import warning in codex-core is preserved. Tests and
 paid routing were not run. `package.sh` creates one current release archive and
 SHA256SUMS; publish the archive, verify remote asset digests and remove generated
 local release/build outputs while retaining the installed runtime and build tools.
+
+The local optimization comparison changes only the dev-small compiler optimization
+level, from 0 to 3. Application code, dependency versions, profile inheritance,
+debug settings and LTO settings are unchanged. Source and binaries remain local;
+the published prerelease is unchanged. Streaming responsiveness is awaiting the
+user's manual comparison, with the prior installed revision retained as a baseline.
