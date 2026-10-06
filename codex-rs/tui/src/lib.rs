@@ -135,6 +135,7 @@ mod copy_input_guard;
 pub(crate) mod custom_terminal;
 mod daybreak;
 mod experimental_features;
+mod jev_route;
 mod markdown_copy;
 mod permission_discovery;
 mod pets;

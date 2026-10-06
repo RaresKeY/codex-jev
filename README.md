@@ -1,3 +1,93 @@
+# Codex Jev
+
+A personal, open source fork of [OpenAI Codex](https://github.com/openai/codex),
+with an **Auto (Jev)** model picker option. Installed as **`codex-jev`** alongside
+an ordinary Codex installation. This fork is independent of OpenAI.
+
+Based on upstream `rust-v0.160.0` (`a956835d020762cb2b570053af06f643a11c0ecc`).
+Fork version: `0.160.0-jev.1`. Upstream Apache 2.0 license and notices are preserved;
+fork additions are published under the same license.
+
+## Build and install
+
+Linux build prerequisites: rootless Podman, Git, Bash and Python 3. The build script
+uses a digest-pinned Rust 1.95 container and a shared build lock. Build outputs stay
+in ignored `.build/`. Start the build from this checkout:
+
+```bash
+bash tools/fork/build.sh
+bash tools/fork/install.sh
+codex-jev
+```
+
+The container build produces the CLI and its code mode host. The installer copies
+both plus the standalone Jev helper/policy into a versioned user installation.
+It installs only `~/.local/bin/codex-jev`; it does not replace `codex`.
+The current build profile is `dev-small`, with no debug symbols and no optimization.
+Native Cargo builds are possible with the pinned toolchain, but the installer
+expects the container wrapper's output directory.
+
+## Use Auto
+
+Run `codex-jev`, open `/model`, and select **Auto (Jev)**. Every new text turn then:
+
+1. Sends the exact current ask and the bundled V5 policy to Jev.
+2. Validates the chosen model and effort against the allowed pool and Codex catalog.
+3. Waits for Codex's thread settings acknowledgement.
+4. Submits the original message with its attachments and mentions in the same chat.
+
+The footer's model-with-reasoning field and a transcript notice show the chosen
+model and effort. Selecting an explicit model disables Auto. Auto selection is
+local to the current widget/session; select it again after resuming or switching
+chats. Follow-up prompts during Auto execution queue for the next turn. Answers
+to Codex's structured questions retain the running turn's model. Shell commands,
+noninteractive `exec`, app-server clients and voice are outside this routing path.
+
+Supply your own Typesafe/Jev key through `TYPESAFE_API_KEY` or `JEV_API`, or point
+`CODEX_JEV_KEY_FILE` at an external dotenv file. The installer can save a file
+**path**, without copying the key:
+
+```bash
+bash tools/fork/install.sh --key-file /absolute/path/to/external.env
+```
+
+The helper uses `jev-1.13.0` at `https://api.typesafe.ai/v1/systemone`. The pool is
+`gpt-6.1-sol` and `gpt-6-luna`, with low/medium/high/xhigh/max effort. Luna at
+high/xhigh/max requires choosing a manual model, matching the existing V5 route.
+Model access still depends on your Codex account. Jev inference has its own API
+usage; Auto sends the current ask to that provider. History, repository files,
+image bytes and local identifiers are not sent to Jev. Short follow-ups can be
+ambiguous because routing has no conversation context.
+
+Failures preserve the draft and stop submission; there are no hidden retries or
+fallback models. Esc/Ctrl+C cancels pending routing. Switching threads cancels
+routing and saves the draft through the existing thread input state.
+
+The CLI uses the ordinary Codex home/auth/settings by default, so existing sign-in
+and chats are available. Set `CODEX_HOME` yourself for a separate profile.
+Upstream automatic update offers are disabled for fork versions; update this fork
+from source using the documented process.
+
+## Maintenance
+
+Read [specs/_readme.md](specs/_readme.md). Upstream workflows are retained under
+`.github/workflows.disabled/`; this fork does not run them automatically. To update:
+
+```bash
+bash tools/fork/upstream-update.sh rust-vVERSION
+# Reconcile conflicts, fork version, lockfile and specs.
+bash tools/fork/build.sh
+bash tools/fork/install.sh
+```
+
+The script integrates only the explicitly named tag and requires a clean checkout.
+Do not push keys, external dotenv files, private session data or build caches.
+Current verification limits are recorded in [specs/jev_routing.md](specs/jev_routing.md).
+
+---
+
+## Upstream README
+
 <p align="center"><strong>Codex CLI</strong> is a coding agent from OpenAI that runs locally on your computer.
 <p align="center">
   <img src="https://github.com/openai/codex/blob/main/.github/codex-cli-splash.png" alt="Codex CLI splash" width="80%" />

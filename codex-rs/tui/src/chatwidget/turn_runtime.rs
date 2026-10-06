@@ -34,6 +34,7 @@ impl ChatWidget {
     pub(super) fn update_task_running_state(&mut self) {
         self.bottom_pane.set_task_running(
             self.turn_lifecycle.agent_turn_running
+                || self.jev_auto.pending.is_some()
                 || self.review.is_review_mode
                 || self.mcp_startup_status.is_some(),
         );

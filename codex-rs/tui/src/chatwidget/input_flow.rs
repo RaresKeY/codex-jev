@@ -14,6 +14,7 @@ use crate::bottom_pane::slash_commands::find_slash_command;
 impl ChatWidget {
     pub(crate) fn set_parent_owned_thread(&mut self) {
         self.cancel_image_submission();
+        self.cancel_jev_route();
         self.blocks_direct_input = true;
         self.bottom_pane.set_parent_owned_thread();
     }
