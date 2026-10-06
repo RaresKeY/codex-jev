@@ -13,6 +13,7 @@ else
   policy="$root/jev/policy.json"
   notices="$root"
 fi
+[[ $revision =~ ^[0-9a-fA-F]{7,40}$ ]] || { printf 'Invalid source revision.\n' >&2; exit 1; }
 for binary in codex codex-code-mode-host; do
   [[ -x "$source_bin/$binary" ]] || { printf 'Build %s first with tools/fork/build.sh\n' "$binary" >&2; exit 1; }
 done
@@ -40,7 +41,7 @@ if [[ ${1:-} == --key-file ]]; then
   config="${XDG_CONFIG_HOME:-$HOME/.config}/codex-jev"
   mkdir -p "$config"
   chmod 700 "$config"
-  printf '%s\n' "$2" > "$config/key-file"
+  realpath -- "$2" > "$config/key-file"
   chmod 600 "$config/key-file"
 fi
 printf 'Installed codex-jev (%s) to %s\n' "$revision" "$HOME/.local/bin/codex-jev"
