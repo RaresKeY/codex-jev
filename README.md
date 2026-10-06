@@ -8,6 +8,22 @@ Based on upstream `rust-v0.160.0` (`a956835d020762cb2b570053af06f643a11c0ecc`).
 Fork version: `0.160.0-jev.1`. Upstream Apache 2.0 license and notices are preserved;
 fork additions are published under the same license.
 
+## Install the Linux build
+
+The initial x86_64 Linux build is available in
+[Releases](https://github.com/RaresKeY/codex-jev/releases/tag/v0.160.0-jev.1).
+Download `codex-jev-linux-x86_64.tar.gz` and `SHA256SUMS`, then:
+
+```bash
+sha256sum -c SHA256SUMS
+tar -xzf codex-jev-linux-x86_64.tar.gz
+bash codex-jev-linux-x86_64/install.sh
+codex-jev
+```
+
+The release is an initial prerelease. Python 3 is needed for Jev Auto; a separate
+Jev API key is required. Source build instructions follow.
+
 ## Build and install
 
 Linux build prerequisites: rootless Podman, Git, Bash and Python 3. The build script
