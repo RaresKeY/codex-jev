@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
+if [[ $# != 0 && ( $# != 2 || ${1:-} != --key-file ) ]]; then
+  printf 'Usage: %s [--key-file /path/to/external.env]\n' "$0" >&2
+  exit 1
+fi
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 source_bin="${CODEX_JEV_DIST:-$root/.build/target/dev-small}"
 if [[ -n "${CODEX_JEV_DIST:-}" ]]; then
@@ -24,7 +28,7 @@ install -m 755 "$source_bin/codex-code-mode-host" "$install_root/codex-code-mode
 install -m 644 "$helper" "$install_root/jev-route.py"
 install -m 644 "$policy" "$install_root/policy.json"
 install -m 644 "$notices/LICENSE" "$notices/NOTICE" "$install_root/"
-ln -sfn "$install_root" "${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev/current"
+ln -sfnT "$install_root" "${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev/current"
 cat > "$HOME/.local/bin/codex-jev" <<'LAUNCHER'
 #!/usr/bin/env bash
 set -euo pipefail
