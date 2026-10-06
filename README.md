@@ -56,7 +56,7 @@ The helper uses `jev-1.13.0` at `https://api.typesafe.ai/v1/systemone`. The pool
 high/xhigh/max requires choosing a manual model, matching the existing V5 route.
 Model access still depends on your Codex account. Jev inference has its own API
 usage; Auto sends the current ask to that provider. History, repository files,
-image bytes and local identifiers are not sent to Jev. Short follow-ups can be
+image bytes are not sent to Jev; no extra thread/workspace identifiers are attached. Short follow-ups can be
 ambiguous because routing has no conversation context.
 
 Failures preserve the draft and stop submission; there are no hidden retries or
