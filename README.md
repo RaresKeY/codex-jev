@@ -39,9 +39,9 @@ codex-jev
 The container build produces the CLI and its code mode host. The installer copies
 both plus the standalone Jev helper/policy into a versioned user installation.
 It installs only `~/.local/bin/codex-jev`; it does not replace `codex`.
-The current local build profile is `dev-small`, with `opt-level = 3` and no debug
-symbols. The published initial prerelease used `opt-level = 0`; this local
-optimization comparison changes only the compiler optimization level.
+The build profile is `dev-small`, with `opt-level = 3` and no debug symbols.
+The prerelease archive was updated from the original `opt-level = 0` build;
+the optimization change leaves other profile settings unchanged.
 Native Cargo builds are possible with the pinned toolchain, but the installer
 expects the container wrapper's output directory.
 

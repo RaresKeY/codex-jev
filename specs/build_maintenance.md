@@ -10,8 +10,8 @@ build workers, ignored Cargo/target directories, and Rust 1.95. The builder imag
 is retained and digest-pinned; intermediate layers are explicitly ephemeral.
 `v8-env.py` reuses upstream codex_package.v8 to download the Codex sandbox V8
 archive/binding pair and verify its checksum against the committed manifest.
-`build.sh` uses a locked dev-small build for CLI and code mode host. The local
-comparison sets `opt-level = 3`; the published initial prerelease used 0. No
+`build.sh` uses a locked dev-small build for CLI and code mode host. The current
+build sets `opt-level = 3`; the initial prerelease archive used 0 before replacement. No
 dependencies were added by the routing patch. The upstream release tag's Cargo.lock
 used local workspace version 0.0.0; fork lock entries are synchronized to the fork version.
 
@@ -38,6 +38,7 @@ local release/build outputs while retaining the installed runtime and build tool
 
 The local optimization comparison changes only the dev-small compiler optimization
 level, from 0 to 3. Application code, dependency versions, profile inheritance,
-debug settings and LTO settings are unchanged. Source and binaries remain local;
-the published prerelease is unchanged. Streaming responsiveness is awaiting the
+debug settings and LTO settings are unchanged. Source commit `668972fbd27add7d91cefe936323a645ce21e877` and its optimized binaries
+are published. The existing v0.160.0-jev.1 Linux archive and SHA256SUMS were replaced
+with this build; release notes identify its exact source revision. Streaming responsiveness is awaiting the
 user's manual comparison, with the prior installed revision retained as a baseline.
