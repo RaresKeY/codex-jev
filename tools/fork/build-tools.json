@@ -1,0 +1,16 @@
+{
+  "bazel-9.0.0-linux-x86_64": {
+    "sha256": "c44a93f25398c68f904fa1d19b61d321de6c0d2f09dca375d7bc0dc9b9428403",
+    "url": "https://github.com/bazelbuild/bazel/releases/download/9.0.0/bazel-9.0.0-linux-x86_64"
+  },
+  "just-1.59.0-x86_64-unknown-linux-musl.tar.gz": {
+    "sha256": "409044617b6f06517c1035e55ca38c8c856ff8b650e41bc2aa1ef82d5903a23e",
+    "member": "just",
+    "url": "https://github.com/casey/just/releases/download/1.59.0/just-1.59.0-x86_64-unknown-linux-musl.tar.gz"
+  },
+  "uv-x86_64-unknown-linux-gnu.tar.gz": {
+    "sha256": "2b428396f12572d4429cf210ca234dd599a33b3af0958a4d5ed569d63e3f344f",
+    "member": "uv-x86_64-unknown-linux-gnu/uv",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.13.4/uv-x86_64-unknown-linux-gnu.tar.gz"
+  }
+}
