@@ -345,6 +345,7 @@ impl ChatWidget {
 
     pub(crate) fn is_user_turn_pending_or_running(&self) -> bool {
         self.pending_image_submission.is_some()
+            || self.jev_auto.pending.is_some()
             || self.input_queue.user_turn_pending_start
             || self.turn_lifecycle.agent_turn_running
             || self.review.is_review_mode

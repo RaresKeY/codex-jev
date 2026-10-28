@@ -903,6 +903,7 @@ impl App {
         if startup_session_cancelled {
             start_in_agents_overview = true;
         }
+        super::jev_startup::apply_launch_overrides(&mut chat_widget, &harness_overrides);
         chat_widget.note_rendered_width(tui.terminal.last_known_screen_size.width);
         if pending_startup_thread_start && !start_in_agents_overview {
             chat_widget

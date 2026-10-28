@@ -667,6 +667,20 @@ fn map_wrapped_websocket_error_event(
     .flatten()
     .find_map(|headers| RetryAfter::from_headers(&json_headers_to_http_headers(headers)));
 
+    if let Some(error) = error
+        .as_ref()
+        .filter(|error| error.code.as_deref() == Some("server_is_overloaded"))
+    {
+        let retry_after = [
+            error.headers.as_ref().and_then(Value::as_object),
+            headers.as_ref(),
+        ]
+        .into_iter()
+        .flatten()
+        .find_map(|headers| RetryAfter::from_headers(&json_headers_to_http_headers(headers)));
+        return Some(ApiError::ServerOverloaded { retry_after });
+    }
+
     if let Some(error) = error.as_ref()
         && let Some(code) = error.code.as_deref()
         && let Some(fallback_message) = match code {
@@ -1030,6 +1044,10 @@ fn serialize_websocket_request(request: &ResponsesWsRequest<'_>) -> Result<Strin
     serde_json::to_string(request)
         .map_err(|err| ApiError::Stream(format!("failed to encode websocket request: {err}")))
 }
+
+#[cfg(test)]
+#[path = "responses_websocket_capacity_tests.rs"]
+mod capacity_tests;
 
 #[cfg(test)]
 mod tests {

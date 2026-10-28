@@ -4,8 +4,8 @@ A personal, open source fork of [OpenAI Codex](https://github.com/openai/codex),
 with an **Auto (Jev)** model picker option. Installed as **`codex-jev`** alongside
 an ordinary Codex installation. This fork is independent of OpenAI.
 
-Based on upstream `rust-v0.160.0` (`a956835d020762cb2b570053af06f643a11c0ecc`).
-Fork version: `0.160.0-jev.1`. Upstream Apache 2.0 license and notices are preserved;
+Based on upstream `rust-v0.165.0` (`e374836b2728d9b7aa981c2902649e640a2edaa8`).
+Fork version: `0.165.0-jev.1`. Upstream Apache 2.0 license and notices are preserved;
 fork additions are published under the same license.
 
 ## Install the Linux build
@@ -18,48 +18,70 @@ Download `codex-jev-linux-x86_64.tar.gz` and `SHA256SUMS`, then:
 sha256sum -c SHA256SUMS
 tar -xzf codex-jev-linux-x86_64.tar.gz
 bash codex-jev-linux-x86_64/install.sh
-codex-jev
+codex-jev --no-daemon
 ```
 
 The release is an initial prerelease. Python 3 is needed for Jev Auto; a separate
 Jev API key is required. Source build instructions follow.
+The published download is still `0.160.0-jev.1`; the `0.165.0-jev.1` source update
+has not been published as a release.
 
 ## Build and install
 
-Linux build prerequisites: rootless Podman, Git, Bash and Python 3. The build script
-uses a digest-pinned Rust 1.95 container and a shared build lock. Build outputs stay
+Linux build prerequisites: rootless Podman, Git, Bash and Python 3. The installer
+also uses `flock` from util-linux. The build script
+uses a reviewed Rust 1.99.1 container and a shared build lock. Build outputs stay
 in ignored `.build/`. Start the build from this checkout:
 
 ```bash
 bash tools/fork/build.sh
 bash tools/fork/install.sh
-codex-jev
+codex-jev --no-daemon
 ```
 
 The container build produces the CLI and its code mode host. The installer copies
 both plus the standalone Jev helper/policy into a versioned user installation.
 It installs only `~/.local/bin/codex-jev`; it does not replace `codex`.
-The build profile is `dev-small`, with `opt-level = 3` and no debug symbols.
+The build profile is `dev-small`, with `opt-level = 1` and no debug symbols.
 The prerelease archive was updated from the original `opt-level = 0` build;
 the optimization change leaves other profile settings unchanged.
 Native Cargo builds are possible with the pinned toolchain, but the installer
 expects the container wrapper's output directory.
 
+Fork CI checks Rust formatting and runs offline helper tests on pushes and pull
+requests. Its manual
+`native` option builds Linux candidates and runs focused Rust regressions.
+Upstream integration and release publication remain reviewed operations; see
+[updates and CI](specs/updates_ci.md). Fork update prompts are currently disabled,
+so installing an updated Jev build uses this fork's installer.
+
 ## Use Auto
 
-Run `codex-jev`, open `/model`, and select **Auto (Jev)**. Every new text turn then:
+Run `codex-jev --no-daemon`; new and resumed chats start with **Auto (Jev)** enabled.
+Explicit launch model, provider or reasoning overrides (including a selected
+profile) take precedence. Custom-provider and Reserve sessions keep their model;
+an acknowledged usage fallback also disables Auto for the current widget.
+With Auto enabled, each new prompt:
 
-1. Sends the exact current ask and the bundled V5 policy to Jev.
+1. Sends the exact current ask, bounded recent context and the bundled V6 policy to Jev.
 2. Validates the chosen model and effort against the allowed pool and Codex catalog.
 3. Waits for Codex's thread settings acknowledgement.
 4. Submits the original message with its attachments and mentions in the same chat.
 
 The footer's model-with-reasoning field and a transcript notice show the chosen
-model and effort. Selecting an explicit model disables Auto. Auto selection is
-local to the current widget/session; select it again after resuming or switching
-chats. Follow-up prompts during Auto execution queue for the next turn. Answers
-to Codex's structured questions retain the running turn's model. Shell commands,
+model and effort. Selecting an explicit model disables Auto for the current
+widget/session; select **Auto (Jev)** in `/model` to enable it again. New or
+reconstructed widgets start in Auto, including when resuming a chat. Follow-up
+prompts during Auto execution queue for the next turn. Answers to Codex's
+structured questions retain the running turn's model. Shell commands,
 noninteractive `exec`, app-server clients and voice are outside this routing path.
+An image-only prompt can be routed without adding synthetic text to the message.
+
+In `/statusline`, toggle **jev-stats** to show the latest acknowledged route:
+`Jev 0.8s M82% E91% 480/12 tok`. This shows local routing time, Jev's model
+and effort confidence, and classifier input/output tokens. It also shows ready,
+routing, failed or off states. The item is off by default and follows the usual
+status-line ordering and saved settings. Confidence is not measured accuracy.
 
 Supply your own Typesafe/Jev key through `TYPESAFE_API_KEY` or `JEV_API`, or point
 `CODEX_JEV_KEY_FILE` at an external dotenv file. The installer can save a file
@@ -69,13 +91,35 @@ Supply your own Typesafe/Jev key through `TYPESAFE_API_KEY` or `JEV_API`, or poi
 bash tools/fork/install.sh --key-file /absolute/path/to/external.env
 ```
 
-The helper uses `jev-1.13.0` at `https://api.typesafe.ai/v1/systemone`. The pool is
-`gpt-6.1-sol` and `gpt-6-luna`, with low/medium/high/xhigh/max effort. Luna at
-high/xhigh/max requires choosing a manual model, matching the existing V5 route.
-Model access still depends on your Codex account. Jev inference has its own API
-usage; Auto sends the current ask to that provider. History, repository files,
-image bytes are not sent to Jev; no extra thread/workspace identifiers are attached. Short follow-ups can be
-ambiguous because routing has no conversation context.
+The helper uses `jev-1.14.0` at `https://api.typesafe.ai/v1/systemone`. V6 offers
+`gpt-6-luna` for established procedures, `gpt-6.1-terra` for writing/visual/GUI work
+within a clear brief, `gpt-6.1-sol` for bounded technical work, and `gpt-6-astra`
+for discovering or reconsidering the approach. Effort is independently chosen
+from low/medium/high/xhigh/max. V6.1 routes otherwise-Luna tasks to Terra when
+images are attached; images alone do not raise effort or replace Sol/Astra.
+Luna at high/xhigh/max requires manual selection.
+Model access still depends on your Codex account.
+
+Jev inference has its own API usage. Auto sends the current ask and up to three
+recent visible requests, the latest available response, the recorded turn status,
+an active goal and attachment presence. Text excerpts are limited to 768 UTF-8
+bytes each and labelled when truncated. Auto also reads one recent page from the
+active app server, selecting chronological messages, plans, tool calls and text
+results, including command exit codes. This includes recent history not loaded
+in the visible widget. The snapshot has at most 24 entries, 1536 bytes per entry
+and 16 KB total; long entries retain their beginning and end. All context is
+explicitly partial, with omissions and unavailable snapshots labelled. Repository
+files are not independently read, and image bytes and extra thread/workspace
+identifiers are not attached. Existing text tool results may contain file excerpts.
+Missing context remains unknown. Terra's role is a routing-policy hypothesis,
+not a measured comparison of executor quality.
+
+The [live old/new context comparison](reports/jev-context-comparison-2026-10-28.md)
+records routing agreement, latency, usage and the initial effort overshoot.
+The [effort refinement comparison](reports/jev-effort-comparison-2026-10-28.md)
+holds context fixed and removes those three max overshoots. V6.3 judges remaining
+uncertainty rather than escalating from failed attempts alone; broader synthetic
+checks improve from 30/44 to 38/44 effort matches, with six misses retained.
 
 Failures preserve the draft and stop submission; there are no hidden retries or
 fallback models. Esc/Ctrl+C cancels pending routing. Switching threads cancels
@@ -83,6 +127,8 @@ routing and saves the draft through the existing thread input state.
 
 The CLI uses the ordinary Codex home/auth/settings by default, so existing sign-in
 and chats are available. Set `CODEX_HOME` yourself for a separate profile.
+Use `--no-daemon` to run this fork's backend and capacity retries. A shared
+upstream server uses its own backend implementation.
 Upstream automatic update offers are disabled for fork versions; update this fork
 from source using the documented process.
 

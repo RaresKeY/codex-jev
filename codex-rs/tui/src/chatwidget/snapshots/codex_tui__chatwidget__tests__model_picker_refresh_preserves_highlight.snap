@@ -1,12 +1,15 @@
 ---
 source: tui/src/chatwidget/tests/popups_and_settings.rs
+assertion_line: 3466
 expression: "render_bottom_popup(&chat, 80)"
 ---
   Select Model and Effort
 
 
-› 1. Renamed model                  Older balanced model for straightforward
+  1. Auto (Jev)                     Send each new text turn to Jev to choose
+                                    model and effort
+› 2. Renamed model                  Older balanced model for straightforward
                                     work.
-  2. Shared display name (current)  Legacy coding model.
+  3. Shared display name (current)  Legacy coding model.
 
   enter select · esc back

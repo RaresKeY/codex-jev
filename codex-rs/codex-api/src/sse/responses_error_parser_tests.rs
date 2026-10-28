@@ -3,6 +3,27 @@
 use super::*;
 use pretty_assertions::assert_eq;
 
+#[tokio::test(start_paused = true)]
+async fn capacity_failure_preserves_valid_event_retry_headers() {
+    for (header, expected) in [
+        ("120", Some(Duration::from_secs(120))),
+        ("0", Some(Duration::ZERO)),
+        ("-1", None),
+        ("invalid", None),
+    ] {
+        let error = parse_failed_response(Some(serde_json::json!({
+            "error": {
+                "code": "server_is_overloaded",
+                "headers": {"Retry-After": header}
+            }
+        })));
+        let ApiError::ServerOverloaded { retry_after } = error else {
+            panic!("expected capacity error, got {error:?}");
+        };
+        assert_eq!(retry_after.map(RetryAfter::remaining_delay), expected);
+    }
+}
+
 #[test]
 fn test_try_parse_retry_delay() {
     let err = Error {

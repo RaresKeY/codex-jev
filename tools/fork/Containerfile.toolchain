@@ -1,0 +1,11 @@
+ARG REVIEWED_BASE_IMAGE
+FROM ${REVIEWED_BASE_IMAGE}
+ARG JEV_RUST_VERSION=1.99.1
+RUN python3 -I /opt/ca-trust/verify_trust.py --system --python > /tmp/toolchain-trust.json \
+ && rustup toolchain install ${JEV_RUST_VERSION} --profile minimal --component rustfmt,clippy,rust-src --no-self-update \
+ && rustup default ${JEV_RUST_VERSION}
+COPY build-tools/bazel /opt/codex-build-tools/bazel
+COPY build-tools/dotslash /usr/local/bin/dotslash
+RUN echo '7668a95db1250f12c40407251e4e203b4ec8bf39bc495d2f485b2d8c99048694  /opt/codex-build-tools/bazel' | sha256sum -c - \
+ && chmod 0755 /opt/codex-build-tools/bazel /usr/local/bin/dotslash
+LABEL io.rareskey.retention="retain" io.rareskey.project="codex-jev" io.rareskey.purpose="rust-build-toolchain"

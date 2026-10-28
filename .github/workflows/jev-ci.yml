@@ -1,0 +1,91 @@
+name: Jev fork checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      native:
+        description: Build Linux binaries and run focused Rust regressions
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  RUSTUP_USE_CURL: "1"
+
+concurrency:
+  group: jev-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  helper:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Inspect runner trust stores
+        run: python3 -I tools/fork/ca-trust/verify_trust.py --system --python
+      - name: Offline helper and installer regressions
+        run: |
+          python3 -m unittest discover -s jev -p '*_tests.py' -q
+          python3 -m unittest discover -s tools/fork -p '*_tests.py' -q
+          bash -n tools/fork/*.sh
+      - uses: dtolnay/rust-toolchain@d124f86f28ff42855784ff3319f48ac182c248f8 # 1.99.1
+        with:
+          components: rustfmt
+      - name: Rust formatting
+        working-directory: codex-rs
+        run: cargo fmt -- --config imports_granularity=Item --check
+
+  native:
+    needs: helper
+    if: github.event_name == 'workflow_dispatch' && inputs.native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TARGET_DIR: ${{ github.workspace }}/.build/target
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Inspect runner trust stores
+        run: python3 -I tools/fork/ca-trust/verify_trust.py --system --python
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang cmake pkg-config libssl-dev libcap-dev libasound2-dev protobuf-compiler bubblewrap
+      - uses: dtolnay/rust-toolchain@d124f86f28ff42855784ff3319f48ac182c248f8 # 1.99.1
+        with:
+          components: rustfmt
+      - uses: taiki-e/install-action@4cef1412cce204788f482e778a0b9187f9626a29 # v2.87.21
+        with:
+          tool: just@1.59.0,cargo-nextest@0.9.150
+      - name: Prepare checksum-pinned V8
+        run: |
+          python3 tools/fork/v8-env.py | sed "s|=/source/|=$GITHUB_WORKSPACE/|" >> "$GITHUB_ENV"
+      - name: Build fork binaries
+        working-directory: codex-rs
+        run: cargo build --locked --profile dev-small --bin codex --bin codex-code-mode-host
+      - name: Focused Jev and retry regressions
+        working-directory: codex-rs
+        run: |
+          just test --locked --cargo-profile dev-small -p codex-tui --lib -E 'test(jev) | test(model_selection_popup) | test(model_picker) | test(bedrock)'
+          just test --locked --cargo-profile dev-small -p codex-api -p codex-protocol --lib -E 'test(capacity) | test(overload) | test(retry_delay)'
+          just test --locked --cargo-profile dev-small -p codex-core --test all -E 'test(retry_after::)'
+      - name: Package candidate
+        run: bash tools/fork/package.sh
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: codex-jev-linux-x86_64-${{ github.sha }}
+          path: |
+            .build/release/codex-jev-linux-x86_64.tar.gz
+            .build/release/SHA256SUMS
+          retention-days: 7

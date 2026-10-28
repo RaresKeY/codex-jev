@@ -425,6 +425,12 @@ impl ChatWidget {
         notification: TurnCompletedNotification,
         replay_kind: Option<ReplayKind>,
     ) {
+        self.jev_auto.context.last_turn_status = Some(match notification.turn.status {
+            TurnStatus::Completed => "completed",
+            TurnStatus::Interrupted => "interrupted",
+            TurnStatus::Failed => "failed",
+            TurnStatus::InProgress => "in_progress",
+        });
         // User-message dedupe only suppresses the app-server echo of a prompt
         // this TUI already rendered locally. Once that turn ends, another
         // client can submit the same text and it still needs its own user cell.

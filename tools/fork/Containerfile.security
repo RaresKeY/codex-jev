@@ -9,7 +9,7 @@ RUN apt-get update -o APT::Update::Error-Mode=any -o Acquire::https::CaInfo=/opt
  && python3 -I /opt/ca-trust/bootstrap_image.py \
  && rm -rf /var/lib/apt/lists/* /opt/ca-trust/wheels /opt/ca-trust/transport.crt
 COPY build-tools /opt/codex-build-tools
-RUN install -m755 /opt/codex-build-tools/just /opt/codex-build-tools/uv /usr/local/bin/ \
+RUN install -m755 /opt/codex-build-tools/just /opt/codex-build-tools/uv /opt/codex-build-tools/dotslash /usr/local/bin/ \
  && printf '%s\n' '#!/bin/sh' 'if [ "${1-}" = --version ]; then exec /opt/codex-build-tools/bazel "$@"; fi' 'exec /opt/codex-build-tools/bazel --output_user_root=/source/.build/bazel --host_jvm_args=-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts "$@"' > /usr/local/bin/bazel \
  && chmod 755 /usr/local/bin/bazel
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt SSL_CERT_DIR=/etc/ssl/certs CARGO_HTTP_CAINFO=/etc/ssl/certs/ca-certificates.crt RUSTUP_USE_CURL=1 RUSTUP_AUTO_INSTALL=0

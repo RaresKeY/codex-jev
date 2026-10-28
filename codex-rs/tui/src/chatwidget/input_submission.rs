@@ -137,6 +137,12 @@ impl ChatWidget {
     ) -> (bool, Option<AppCommand>) {
         self.bottom_pane.dismiss_composer_sparkle();
         if self.has_misalignment_policy_violation() {
+            if self.jev_auto.applying {
+                self.restore_user_message_to_composer(user_message_for_restore(
+                    user_message,
+                    &history_record,
+                ));
+            }
             return (false, None);
         }
         self.empty_state_animation.borrow_mut().dismiss();
@@ -514,6 +520,12 @@ impl ChatWidget {
         }
 
         if !self.submit_op(op.clone()) {
+            if self.jev_auto.applying {
+                self.restore_user_message_to_composer(user_message_for_restore(
+                    submitted_message,
+                    &history_record,
+                ));
+            }
             return (false, None);
         }
         if source == UserMessageSource::Prompt {

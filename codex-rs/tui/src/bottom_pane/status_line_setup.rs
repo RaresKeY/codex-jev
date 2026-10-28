@@ -10,6 +10,7 @@
 //! # Available Status Line Items
 //!
 //! - Model information (name, reasoning level)
+//! - Jev routing latency, confidence and token usage
 //! - Directory paths (current dir, project root)
 //! - Machine hostname
 //! - Git information (branch name)
@@ -158,6 +159,9 @@ pub(crate) enum StatusLineItem {
 
     /// Latest checklist task progress from `update_plan` (if available).
     TaskProgress,
+
+    /// Latest acknowledged Jev route latency, confidence and classifier token usage.
+    JevStats,
 }
 
 impl StatusLineItem {
@@ -167,6 +171,9 @@ impl StatusLineItem {
             StatusLineItem::ModelName => "Current model name",
             StatusLineItem::ModelWithReasoning => "Current model name with reasoning level",
             StatusLineItem::Reasoning => "Current reasoning level",
+            StatusLineItem::JevStats => {
+                "Last Jev route: latency, model/effort confidence, input/output tokens"
+            }
             StatusLineItem::CurrentDir => "Current working directory",
             StatusLineItem::ProjectRoot => "Project name (omitted when unavailable)",
             StatusLineItem::Hostname => "Current machine hostname (omitted when unavailable)",
@@ -227,6 +234,7 @@ impl StatusLineItem {
             StatusLineItem::ModelName => StatusSurfacePreviewItem::Model,
             StatusLineItem::ModelWithReasoning => StatusSurfacePreviewItem::ModelWithReasoning,
             StatusLineItem::Reasoning => StatusSurfacePreviewItem::Reasoning,
+            StatusLineItem::JevStats => StatusSurfacePreviewItem::JevStats,
             StatusLineItem::CurrentDir => StatusSurfacePreviewItem::CurrentDir,
             StatusLineItem::ProjectRoot => StatusSurfacePreviewItem::ProjectRoot,
             StatusLineItem::Hostname => StatusSurfacePreviewItem::Hostname,
@@ -432,6 +440,10 @@ impl Renderable for StatusLineSetupView {
         self.picker.desired_height(width)
     }
 }
+
+#[cfg(test)]
+#[path = "status_line_setup_jev_tests.rs"]
+mod jev_tests;
 
 #[cfg(test)]
 mod tests {

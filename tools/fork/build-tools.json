@@ -1,7 +1,7 @@
 {
-  "bazel-9.0.0-linux-x86_64": {
-    "sha256": "c44a93f25398c68f904fa1d19b61d321de6c0d2f09dca375d7bc0dc9b9428403",
-    "url": "https://github.com/bazelbuild/bazel/releases/download/9.0.0/bazel-9.0.0-linux-x86_64"
+  "bazel-9.2.0-linux-x86_64": {
+    "sha256": "7668a95db1250f12c40407251e4e203b4ec8bf39bc495d2f485b2d8c99048694",
+    "url": "https://github.com/bazelbuild/bazel/releases/download/9.2.0/bazel-9.2.0-linux-x86_64"
   },
   "just-1.59.0-x86_64-unknown-linux-musl.tar.gz": {
     "sha256": "409044617b6f06517c1035e55ca38c8c856ff8b650e41bc2aa1ef82d5903a23e",
@@ -12,5 +12,10 @@
     "sha256": "2b428396f12572d4429cf210ca234dd599a33b3af0958a4d5ed569d63e3f344f",
     "member": "uv-x86_64-unknown-linux-gnu/uv",
     "url": "https://github.com/astral-sh/uv/releases/download/0.13.4/uv-x86_64-unknown-linux-gnu.tar.gz"
+  },
+  "dotslash-linux-musl.x86_64.v0.5.9.tar.gz": {
+    "sha256": "4c75c6eb7890ae35993b962073f6d9bbe78b42b81a5691303ad70f63bfbf7196",
+    "url": "https://github.com/facebook/dotslash/releases/download/v0.5.9/dotslash-linux-musl.x86_64.v0.5.9.tar.gz",
+    "member": "dotslash"
   }
 }

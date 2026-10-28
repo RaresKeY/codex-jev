@@ -253,6 +253,7 @@ pub(super) async fn make_chatwidget_manual_with_auth(
         session_telemetry,
     };
     let mut widget = ChatWidget::new_with_op_target(common, super::CodexOpTarget::Direct(op_tx));
+    widget.disable_jev_auto();
     widget.test_codex_home = Some(codex_home);
     widget.clock_format = crate::clock_format::ClockFormat::TwentyFourHour;
     widget.windows_sandbox_host = crate::app::WindowsSandboxHost::Local;

@@ -1,0 +1,6 @@
+---
+source: tui/src/chatwidget/jev_auto_tests.rs
+assertion_line: 186
+expression: "lines.join(\"\\n\")"
+---
+• Auto (Jev) enabled for this chat. Each new text turn and bounded recent conversation, including tool calls and results, are sent to Jev for model and effort selection.

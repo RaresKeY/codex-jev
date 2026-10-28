@@ -289,6 +289,7 @@ mod input_restore;
 mod input_submission;
 mod interrupts;
 mod jev_auto;
+mod jev_status;
 mod questions;
 mod startup_submission;
 use self::interrupts::InterruptManager;
@@ -1407,6 +1408,9 @@ impl ChatWidget {
     }
 
     fn on_user_message_display(&mut self, display: UserMessageDisplay) {
+        // A different client or replay can change the evidence while routing waits.
+        self.cancel_jev_route();
+        self.jev_auto.context.record_request(&display.message);
         self.transcript.last_status_copy_targets = None;
         self.last_rendered_user_message_display = Some(display.clone());
         self.last_rendered_user_message_client_id = None;

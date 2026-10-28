@@ -39,7 +39,7 @@ async fn codex_err_debug_preserves_legacy_shape() {
 #[test]
 fn retryability_preserves_error_details_distinctions() {
     let errors = [
-        (CodexErr::ServerOverloaded, false),
+        (CodexErr::ServerOverloaded, true),
         (CodexErr::new(CodexErrorDetails::ContentFilter), true),
         (
             CodexErr::new(CodexErrorDetails::RateLimitExceeded("retry later".into())),
@@ -79,6 +79,33 @@ fn retryability_preserves_error_details_distinctions() {
             "unexpected retryability for {err:?}"
         );
     }
+}
+
+#[tokio::test(start_paused = true)]
+async fn capacity_retry_backoff_is_bounded_and_preserves_server_deadlines() {
+    for (attempt, minimum_ms, maximum_ms) in [
+        (1, 4500, 5500),
+        (2, 9000, 11000),
+        (3, 18000, 22000),
+        (4, 36000, 44000),
+        (5, 60000, 60000),
+        (u64::MAX, 60000, 60000),
+    ] {
+        let delay = CodexErr::ServerOverloaded
+            .retry_delay(attempt)
+            .expect("capacity should be retryable");
+        assert!((minimum_ms..=maximum_ms).contains(&delay.as_millis()));
+    }
+
+    let advice = RetryAfter::from_delay(Duration::from_secs(120)).expect("retry deadline");
+    let error = CodexErr::ServerOverloaded.with_retry_after(advice);
+    tokio::time::advance(Duration::from_secs(30)).await;
+    assert_eq!(
+        error.retry_delay(/*retry_count*/ 1),
+        Some(Duration::from_secs(90))
+    );
+    tokio::time::advance(Duration::from_secs(90)).await;
+    assert_eq!(error.retry_delay(/*retry_count*/ 5), Some(Duration::ZERO));
 }
 
 /// Retryable errors prefer server advice and otherwise back off by attempt; advice does not

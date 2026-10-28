@@ -727,9 +727,14 @@ impl ChatWidget {
     /// git metadata.
     pub(super) fn status_line_value_for_item(&mut self, item: StatusLineItem) -> Option<String> {
         match item {
+            StatusLineItem::ModelName if self.jev_auto.awaiting_model_selection() => {
+                Some("Auto (Jev)".to_string())
+            }
             StatusLineItem::ModelName => Some(self.model_display_name().to_string()),
             StatusLineItem::ModelWithReasoning => Some(self.model_with_reasoning_display_name()),
+            StatusLineItem::Reasoning if self.jev_auto.awaiting_model_selection() => None,
             StatusLineItem::Reasoning => Some(self.reasoning_display_name()),
+            StatusLineItem::JevStats => Some(self.jev_auto.stats_display()),
             StatusLineItem::CurrentDir => {
                 Some(format_directory_display(
                     self.status_line_cwd(),
@@ -897,6 +902,7 @@ impl ChatWidget {
             StatusSurfacePreviewItem::Model => StatusLineItem::ModelName,
             StatusSurfacePreviewItem::ModelWithReasoning => StatusLineItem::ModelWithReasoning,
             StatusSurfacePreviewItem::Reasoning => StatusLineItem::Reasoning,
+            StatusSurfacePreviewItem::JevStats => StatusLineItem::JevStats,
         };
         self.status_line_value_for_item(status_line_item)
     }
@@ -969,18 +975,16 @@ impl ChatWidget {
             TerminalTitleItem::Daybreak => {
                 self.status_line_value_for_item(StatusLineItem::Daybreak)
             }
-            TerminalTitleItem::Model => Some(Self::truncate_terminal_title_part(
-                self.model_display_name().to_string(),
-                /*max_chars*/ 32,
-            )),
+            TerminalTitleItem::Model => self
+                .status_line_value_for_item(StatusLineItem::ModelName)
+                .map(|value| Self::truncate_terminal_title_part(value, /*max_chars*/ 32)),
             TerminalTitleItem::ModelWithReasoning => Some(Self::truncate_terminal_title_part(
                 self.model_with_reasoning_display_name(),
                 /*max_chars*/ 32,
             )),
-            TerminalTitleItem::Reasoning => Some(Self::truncate_terminal_title_part(
-                self.reasoning_display_name(),
-                /*max_chars*/ 32,
-            )),
+            TerminalTitleItem::Reasoning => self
+                .status_line_value_for_item(StatusLineItem::Reasoning)
+                .map(|value| Self::truncate_terminal_title_part(value, /*max_chars*/ 32)),
             TerminalTitleItem::TaskProgress => self.terminal_title_task_progress(),
         }
     }
@@ -991,6 +995,9 @@ impl ChatWidget {
     }
 
     fn model_with_reasoning_display_name(&self) -> String {
+        if self.jev_auto.awaiting_model_selection() {
+            return "Auto (Jev)".to_string();
+        }
         let label = self.reasoning_display_name();
         let service_tier_label = self
             .current_service_tier()

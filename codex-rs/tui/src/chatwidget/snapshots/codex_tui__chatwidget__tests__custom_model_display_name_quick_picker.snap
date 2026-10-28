@@ -6,8 +6,10 @@ expression: "render_bottom_popup(&chat, 80)"
   Pick a quick auto mode or browse all models.
 
 
-  1. Auto Fast             Custom provider model
-› 2. All models (current)  Choose a specific model and reasoning level (current:
+  1. Auto (Jev)            Send each new text turn to Jev to choose model and
+                           effort
+  2. Auto Fast             Custom provider model
+› 3. All models (current)  Choose a specific model and reasoning level (current:
                            GPT-5.6 Luna)
 
   enter select · esc back

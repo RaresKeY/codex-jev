@@ -488,6 +488,7 @@ impl App {
     /// replacement widget so that replayed collab items render agent names immediately.
     pub(super) fn replace_chat_widget(&mut self, mut chat_widget: ChatWidget) {
         chat_widget.fork_in_progress = self.chat_widget.fork_in_progress;
+        super::jev_startup::apply_launch_overrides(&mut chat_widget, &self.harness_overrides);
         self.pending_right_click_paste = None;
         self.config_notification_test_pending = None;
         if !self.chat_widget.realtime_conversation_is_running() {

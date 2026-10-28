@@ -237,6 +237,8 @@ impl ChatWidget {
 
     /// Commit a successfully applied task setting and keep its recovery notice visible together.
     pub(crate) fn finish_backend_banner_fallback(&mut self, mode: CollaborationMode) {
+        // An acknowledged usage fallback owns the model until the user changes it.
+        self.disable_jev_auto();
         let previous_model = self.current_model().to_string();
         let reserve_return = (mode.model() == LUNA_RESERVE_MODEL)
             .then(|| self.backend_banner_state.account_id.clone())

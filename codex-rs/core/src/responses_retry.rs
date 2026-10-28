@@ -89,6 +89,7 @@ pub(crate) async fn handle_response_stream_error(
         return Err(err);
     };
     let retry_after = err.retry_after();
+    let is_overloaded = matches!(err.details(), CodexErrorDetails::ServerOverloaded);
 
     if turn_context
         .config
@@ -117,7 +118,8 @@ pub(crate) async fn handle_response_stream_error(
         return Ok(());
     }
 
-    if retry_state.retries >= max_retries
+    if !is_overloaded
+        && retry_state.retries >= max_retries
         && client_session.try_switch_fallback_transport(
             &turn_context.session_telemetry,
             turn_context.model_info(),
@@ -144,18 +146,22 @@ pub(crate) async fn handle_response_stream_error(
 
         // In release builds, hide the first websocket retry notification to reduce noisy
         // transient reconnect messages. In debug builds, keep full visibility for diagnosis.
-        let report_error = retry_count > 1
+        let report_error = is_overloaded
+            || retry_count > 1
             || cfg!(debug_assertions)
             || !sess.services.model_client.responses_websocket_enabled();
         if report_error {
             // Surface retry information to any UI/front-end so the user understands what is
             // happening instead of staring at a seemingly frozen screen.
-            sess.notify_stream_error(
-                turn_context,
-                format!("Reconnecting... {retry_count}/{max_retries}"),
-                err,
-            )
-            .await;
+            let message = if is_overloaded {
+                format!(
+                    "Model at capacity. Retrying in {:.0}s ({retry_count}/{max_retries})",
+                    delay.as_secs_f64().ceil()
+                )
+            } else {
+                format!("Reconnecting... {retry_count}/{max_retries}")
+            };
+            sess.notify_stream_error(turn_context, message, err).await;
         }
         // Use one clock sample so local backoff telemetry retains the selected delay.
         let now = Instant::now();

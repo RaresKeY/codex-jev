@@ -38,6 +38,7 @@ impl StatusLineAccent {
         match item {
             StatusLineItem::ModelName
             | StatusLineItem::ModelWithReasoning
+            | StatusLineItem::JevStats
             | StatusLineItem::Reasoning => Self::Model,
             StatusLineItem::CurrentDir | StatusLineItem::ProjectRoot => Self::Path,
             StatusLineItem::GitBranch

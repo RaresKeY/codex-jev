@@ -2616,7 +2616,7 @@ dependencies = [
 
 [[package]]
 name = "codex-cloud-client"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -3172,7 +3172,7 @@ dependencies = [
 
 [[package]]
 name = "codex-direct-tool-timing"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "codex-utils-critical-path",
  "pretty_assertions",
@@ -3657,7 +3657,7 @@ dependencies = [
 
 [[package]]
 name = "codex-guardian-v3"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "codex-message-board",
  "codex-protocol",
@@ -4085,7 +4085,7 @@ dependencies = [
 
 [[package]]
 name = "codex-message-board"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "base64 0.22.1",
  "caseless",
@@ -4193,7 +4193,7 @@ dependencies = [
 
 [[package]]
 name = "codex-multi-env-copy-file"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "anyhow",
  "codex-config",
@@ -4446,7 +4446,7 @@ dependencies = [
 
 [[package]]
 name = "codex-protocol-test-support"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "codex-protocol",
 ]
@@ -4629,7 +4629,7 @@ dependencies = [
 
 [[package]]
 name = "codex-runtime-agent-instance"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "base64 0.22.1",
  "codex-agent-identity",
@@ -5157,7 +5157,7 @@ dependencies = [
 
 [[package]]
 name = "codex-utils-critical-path"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "pretty_assertions",
 ]
@@ -5515,7 +5515,7 @@ dependencies = [
 
 [[package]]
 name = "codex-windows-sandbox-test-support"
-version = "0.0.0"
+version = "0.165.0-jev.1"
 dependencies = [
  "dirs",
 ]

@@ -21,15 +21,61 @@ fi
 for binary in codex codex-code-mode-host; do
   [[ -x "$source_bin/$binary" ]] || { printf 'Build %s first with tools/fork/build.sh\n' "$binary" >&2; exit 1; }
 done
-install_root="${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev/releases/$revision"
-mkdir -p "$install_root" "$HOME/.local/bin"
+for input in "$helper" "$policy" "$notices/LICENSE" "$notices/NOTICE"; do
+  [[ -r "$input" && -f "$input" ]] || { printf 'Missing install input: %s\n' "$input" >&2; exit 1; }
+done
+key_file_path=
+if [[ ${1:-} == --key-file ]]; then
+  [[ -f $2 ]] || { printf 'Supply an existing external key file.\n' >&2; exit 1; }
+  IFS= read -r -d '' key_file_path < <(realpath --zero -- "$2")
+  [[ $key_file_path != *$'\n'* ]] || { printf 'Key file paths cannot contain newlines.\n' >&2; exit 1; }
+fi
+data_root="${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev"
+mkdir -p "$data_root/releases" "$HOME/.local/bin"
+exec 9>"$data_root/install.lock"
+flock 9
+# A dirty rebuild can share HEAD with the running release. Never overwrite it.
+install_root=$(mktemp -d "$data_root/releases/$revision-XXXXXXXX")
+launcher_tmp=
+launcher_backup=
+launcher_published=false
+current_tmp=
+key_tmp=
+key_backup=
+key_published=false
+published=false
+cleanup() {
+  # A signal can arrive between publishing the symlink and setting the flag.
+  if [[ $published == false && $(readlink -- "$data_root/current" || true) != "$install_root" ]]; then
+    if [[ $key_published == true ]]; then
+      if [[ -n "$key_backup" ]]; then
+        mv -fT -- "$key_backup" "$config/key-file"
+      else
+        rm -f -- "$config/key-file"
+      fi
+    fi
+    if [[ $launcher_published == true ]]; then
+      if [[ -n "$launcher_backup" ]]; then
+        mv -fT -- "$launcher_backup" "$HOME/.local/bin/codex-jev"
+      else
+        rm -f -- "$HOME/.local/bin/codex-jev"
+      fi
+    fi
+    rm -rf -- "$install_root"
+  fi
+  for temporary in "$launcher_tmp" "$launcher_backup" "$current_tmp" "$key_tmp" "$key_backup"; do
+    [[ -z "$temporary" ]] || rm -f -- "$temporary"
+  done
+}
+trap cleanup EXIT
+chmod 755 "$install_root"
 install -m 755 "$source_bin/codex" "$install_root/codex-jev-native"
 install -m 755 "$source_bin/codex-code-mode-host" "$install_root/codex-code-mode-host"
 install -m 644 "$helper" "$install_root/jev-route.py"
 install -m 644 "$policy" "$install_root/policy.json"
 install -m 644 "$notices/LICENSE" "$notices/NOTICE" "$install_root/"
-ln -sfnT "$install_root" "${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev/current"
-cat > "$HOME/.local/bin/codex-jev" <<'LAUNCHER'
+launcher_tmp=$(mktemp "$HOME/.local/bin/.codex-jev.XXXXXXXX")
+cat > "$launcher_tmp" <<'LAUNCHER'
 #!/usr/bin/env bash
 set -euo pipefail
 key_pointer="${XDG_CONFIG_HOME:-$HOME/.config}/codex-jev/key-file"
@@ -39,13 +85,31 @@ if [[ -z "${CODEX_JEV_KEY_FILE:-}" && -f "$key_pointer" ]]; then
 fi
 exec "${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev/current/codex-jev-native" "$@"
 LAUNCHER
-chmod 755 "$HOME/.local/bin/codex-jev"
+chmod 755 "$launcher_tmp"
+if [[ -e "$HOME/.local/bin/codex-jev" || -L "$HOME/.local/bin/codex-jev" ]]; then
+  launcher_backup=$(mktemp "$HOME/.local/bin/.codex-jev-backup.XXXXXXXX")
+  cp -pP -- "$HOME/.local/bin/codex-jev" "$launcher_backup"
+fi
 if [[ ${1:-} == --key-file ]]; then
-  [[ $# == 2 && -f $2 ]] || { printf 'Supply an existing external key file.\n' >&2; exit 1; }
   config="${XDG_CONFIG_HOME:-$HOME/.config}/codex-jev"
   mkdir -p "$config"
   chmod 700 "$config"
-  realpath -- "$2" > "$config/key-file"
-  chmod 600 "$config/key-file"
+  key_tmp=$(mktemp "$config/.key-file.XXXXXXXX")
+  printf '%s\n' "$key_file_path" > "$key_tmp"
+  chmod 600 "$key_tmp"
+  if [[ -e "$config/key-file" || -L "$config/key-file" ]]; then
+    key_backup=$(mktemp "$config/.key-file-backup.XXXXXXXX")
+    cp -pP -- "$config/key-file" "$key_backup"
+  fi
 fi
+current_tmp=$(mktemp "$data_root/.current.XXXXXXXX")
+ln -sfnT "$install_root" "$current_tmp"
+if [[ -n "$key_tmp" ]]; then
+  key_published=true
+  mv -fT -- "$key_tmp" "$config/key-file"
+fi
+launcher_published=true
+mv -fT -- "$launcher_tmp" "$HOME/.local/bin/codex-jev"
+mv -fT -- "$current_tmp" "$data_root/current"
+published=true
 printf 'Installed codex-jev (%s) to %s\n' "$revision" "$HOME/.local/bin/codex-jev"

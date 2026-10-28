@@ -445,9 +445,17 @@ impl CodexErr {
             | CodexErrorDetails::CyberPolicy { .. }
             | CodexErrorDetails::BioPolicy { .. }
             | CodexErrorDetails::MisalignmentPolicyViolation { .. } => None,
-            CodexErrorDetails::ServerOverloaded | CodexErrorDetails::RetryLimit(_) => {
-                self.server_retry_delay()
+            CodexErrorDetails::ServerOverloaded => {
+                Some(self.server_retry_delay().unwrap_or_else(|| {
+                    // Scale the existing 200 ms jittered backoff to 5 s, doubling
+                    // through 10, 20 and 40 s before capping at 60 s. Clamp the
+                    // attempt first so large configured retry budgets cannot overflow.
+                    backoff(retry_count.min(5))
+                        .saturating_mul(25)
+                        .min(Duration::from_secs(60))
+                }))
             }
+            CodexErrorDetails::RetryLimit(_) => self.server_retry_delay(),
             CodexErrorDetails::Stream(..)
             | CodexErrorDetails::ContentFilter
             | CodexErrorDetails::RateLimitExceeded(_)

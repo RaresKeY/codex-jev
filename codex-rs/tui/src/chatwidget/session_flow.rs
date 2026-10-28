@@ -98,6 +98,9 @@ impl ChatWidget {
             {
                 self.refresh_account_scoped_models();
             }
+            self.jev_auto.context = Default::default();
+            self.jev_auto.has_selected_model = false;
+            self.jev_auto.status = Default::default();
             self.backend_banner_notice_model = None;
             self.automatic_model_switch_state =
                 backend_banners::AutomaticModelSwitchState::default();
@@ -184,6 +187,11 @@ impl ChatWidget {
                 }
                 self.update_collaboration_mode_indicator();
             }
+        }
+        if self.config.model_provider_id != codex_model_provider_info::OPENAI_PROVIDER_ID
+            || self.current_model() == crate::model_catalog::LUNA_RESERVE_MODEL
+        {
+            self.disable_jev_auto();
         }
         let effort = self.effective_reasoning_effort();
         self.bottom_pane
@@ -330,6 +338,11 @@ impl ChatWidget {
         );
         self.turn_lifecycle.reset_thread();
         self.review = Default::default();
+        // The reverted prompt already owns the composer; discard the stale route.
+        self.jev_auto.pending = None;
+        self.jev_auto.context = Default::default();
+        self.jev_auto.has_selected_model = false;
+        self.jev_auto.status = Default::default();
         self.transcript.take_active_cell();
         self.transcript.reset_copy_history();
         self.transcript.reset_turn_flags();

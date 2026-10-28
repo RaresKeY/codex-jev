@@ -1,0 +1,1243 @@
+[
+  {
+    "id": "failed-hypotheses",
+    "task": "continue",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Investigate the synchronization hang.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Paused for your review.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Paused for your review."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "run synchronization experiments",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "Mutex ordering fix failed. Queue backpressure fix failed. Clock skew correction failed. All three plausible approaches failed independently; cross-system assumptions remain contradictory.",
+            "exitCode": 1,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Investigate the synchronization hang."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Investigate the synchronization hang.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: run synchronization experiments",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(1)\nMutex ordering fix failed. Queue backpressure fix failed. Clock skew correction failed. All three plausible approaches failed independently; cross-system assumptions remain contradictory.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Paused for your review.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6-astra"
+    ],
+    "expected_efforts": [
+      "high",
+      "xhigh"
+    ],
+    "rationale": "Three failed plausible approaches require reconsidering the framing."
+  },
+  {
+    "id": "established-procedure",
+    "task": "go ahead",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Prepare the asset conversion workflow.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Ready for the next step.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Ready for the next step."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "cat approved-runbook.txt",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "The workflow is already established and approved: run the existing convert-assets script, copy its output, check the manifest. No code edits or design choices remain.",
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Prepare the asset conversion workflow."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Prepare the asset conversion workflow.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: cat approved-runbook.txt",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(0)\nThe workflow is already established and approved: run the existing convert-assets script, copy its output, check the manifest. No code edits or design choices remain.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Ready for the next step.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6-luna"
+    ],
+    "expected_efforts": [
+      "low"
+    ],
+    "rationale": "Only a documented repeatable procedure remains."
+  },
+  {
+    "id": "implementation-behind-visual",
+    "task": "do that",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Make the button match the reference.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "The next step is ready.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "The next step is ready."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "inspect button code",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "The CSS baseline is approved. Implement the identified focus-state bug in Button.tsx and verify keyboard focus. This requires code changes, not a screenshot comparison; approach and checks are known.",
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Make the button match the reference."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Make the button match the reference.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: inspect button code",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(0)\nThe CSS baseline is approved. Implement the identified focus-state bug in Button.tsx and verify keyboard focus. This requires code changes, not a screenshot comparison; approach and checks are known.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "The next step is ready.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6.1-sol"
+    ],
+    "expected_efforts": [
+      "low",
+      "medium"
+    ],
+    "rationale": "The remaining deliverable is bounded implementation with an established fix."
+  },
+  {
+    "id": "visual-review-ready",
+    "task": "check it",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Fix the rendering defect.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Ready for your review.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Ready for your review."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "verify render fix",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "Implementation and all tests are complete. Remaining task: compare the two supplied screenshots with the approved reference using the existing checklist; report alignment and color differences. No implementation or technical diagnosis remains.",
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Fix the rendering defect."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Fix the rendering defect.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: verify render fix",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(0)\nImplementation and all tests are complete. Remaining task: compare the two supplied screenshots with the approved reference using the existing checklist; report alignment and color differences. No implementation or technical diagnosis remains.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Ready for your review.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6.1-terra"
+    ],
+    "expected_efforts": [
+      "low"
+    ],
+    "rationale": "Remaining work is visual evaluation against an explicit reference."
+  },
+  {
+    "id": "technical-correctness",
+    "task": "explain the result",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Review this technical change.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "The evidence is available.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "The evidence is available."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "run failing test",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "The crash occurs because an async callback retains a borrowed pointer after its owner is freed. The reproducer and lifetime trace agree. Explain the ownership violation and the bounded fix using the trace; no architectural reframing is needed.",
+            "exitCode": 1,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Review this technical change."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Review this technical change.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: run failing test",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(1)\nThe crash occurs because an async callback retains a borrowed pointer after its owner is freed. The reproducer and lifetime trace agree. Explain the ownership violation and the bounded fix using the trace; no architectural reframing is needed.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "The evidence is available.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6.1-sol"
+    ],
+    "expected_efforts": [
+      "low",
+      "medium"
+    ],
+    "rationale": "Technical explanation and nuanced correctness require Sol."
+  },
+  {
+    "id": "long-output-failure-tail",
+    "task": "try again",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Investigate the cache invalidation issue.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Waiting for the next step.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Waiting for the next step."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "run cache experiments",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "Setup: cache, database, and replication clocks have been isolated.\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nConclusion: each of the three plausible fixes failed. The cache-only model contradicts replica traces. Reconsider the consistency assumptions across all systems.",
+            "exitCode": 1,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Investigate the cache invalidation issue."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Investigate the cache invalidation issue.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: run cache experiments",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(1)\nSetup: cache, database, and replication clocks have been isolated.\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformativ\n[…]\n progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nuninformative progress line\nConclusion: each of the three plausible fixes failed. The cache-only model contradicts replica traces. Reconsider the consistency assumptions across all systems.",
+          "truncated": true
+        },
+        {
+          "role": "assistant",
+          "text": "Waiting for the next step.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6-astra"
+    ],
+    "expected_efforts": [
+      "high",
+      "xhigh"
+    ],
+    "rationale": "The decisive failed-approach evidence is at the tail of a long result."
+  },
+  {
+    "id": "unloaded-history",
+    "task": "carry on",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Continue the work we discussed.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Ready.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Ready."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "cat agreed-plan.txt",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "The user approved exact wording for the release note. Remaining task: copy the approved paragraph into NOTES.txt verbatim. Do not investigate or implement the future items described in the paragraph.",
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Continue the work we discussed."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Continue the work we discussed.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: cat agreed-plan.txt",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(0)\nThe user approved exact wording for the release note. Remaining task: copy the approved paragraph into NOTES.txt verbatim. Do not investigate or implement the future items described in the paragraph.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Ready.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6-luna"
+    ],
+    "expected_efforts": [
+      "low"
+    ],
+    "rationale": "The server snapshot resolves a referent absent from the short visible request."
+  },
+  {
+    "id": "complex-known-method",
+    "task": "implement it",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Build the protocol implementation.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Ready to proceed.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Ready to proceed."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "cat implementation-plan.txt",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "The protocol and test vectors are final. Implement the documented parser and replay semantics using the provided interfaces; direct checks and error cases are specified. Complex execution, but no unresolved design choices.",
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Build the protocol implementation."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Build the protocol implementation.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: cat implementation-plan.txt",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(0)\nThe protocol and test vectors are final. Implement the documented parser and replay semantics using the provided interfaces; direct checks and error cases are specified. Complex execution, but no unresolved design choices.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Ready to proceed.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6.1-sol"
+    ],
+    "expected_efforts": [
+      "low",
+      "medium"
+    ],
+    "rationale": "Complex bounded execution does not imply high effort."
+  },
+  {
+    "id": "control-new-topic",
+    "task": "Record a TODO about a future performance investigation.",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Investigate the synchronization hang.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Three hypotheses failed.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Three hypotheses failed."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "run experiment",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "Cross-system behavior remains unexplained.",
+            "exitCode": 1,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Investigate the synchronization hang."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Investigate the synchronization hang.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: run experiment",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(1)\nCross-system behavior remains unexplained.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Three hypotheses failed.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6-luna"
+    ],
+    "expected_efforts": [
+      "low"
+    ],
+    "rationale": "A new immediate note-taking task must not inherit earlier complexity."
+  },
+  {
+    "id": "control-writing",
+    "task": "Refine this wording: We should finish tomorrow.",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Investigate a compiler regression.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "The design is unresolved.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "The design is unresolved."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "run compiler experiment",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "The first two hypotheses failed.",
+            "exitCode": 1,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Investigate a compiler regression."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Investigate a compiler regression.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: run compiler experiment",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(1)\nThe first two hypotheses failed.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "The design is unresolved.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6.1-terra"
+    ],
+    "expected_efforts": [
+      "low"
+    ],
+    "rationale": "A clear writing request remains Terra despite unrelated technical history."
+  },
+  {
+    "id": "control-image",
+    "task": "Copy the attached image to the review folder.",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Use the established media workflow.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Ready.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": true
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Ready."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "cat media-runbook.txt",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "Copy the supplied asset using the standard workflow; no new decisions.",
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Use the established media workflow."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Use the established media workflow.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: cat media-runbook.txt",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(0)\nCopy the supplied asset using the standard workflow; no new decisions.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Ready.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6.1-terra"
+    ],
+    "expected_efforts": [
+      "low"
+    ],
+    "rationale": "Image presence excludes Luna without raising effort."
+  },
+  {
+    "id": "control-repeat",
+    "task": "run it again",
+    "legacy": {
+      "source": "current_widget_visible_history",
+      "partial": true,
+      "recent_requests": [
+        {
+          "text": "Run the documented offline validation command.",
+          "truncated": false
+        }
+      ],
+      "recent_response": {
+        "text": "Validation completed.",
+        "truncated": false
+      },
+      "last_turn_status": "completed",
+      "active_goal": null,
+      "images_attached": false
+    },
+    "page": {
+      "data": [
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "agentMessage",
+            "id": "answer",
+            "text": "Validation completed."
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "commandExecution",
+            "id": "command",
+            "command": "validate --offline",
+            "cwd": "/example",
+            "processId": null,
+            "status": "completed",
+            "commandActions": [],
+            "aggregatedOutput": "All 42 checks passed. This is the established validation command.",
+            "exitCode": 0,
+            "durationMs": 12
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        },
+        {
+          "turnId": "previous",
+          "item": {
+            "type": "userMessage",
+            "id": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Run the documented offline validation command."
+              }
+            ]
+          },
+          "startedAtMs": null,
+          "completedAtMs": null
+        }
+      ],
+      "nextCursor": null,
+      "backwardsCursor": null
+    },
+    "transcript": {
+      "source": "app_server_thread_items",
+      "availability": "available",
+      "omitted": false,
+      "entries": [
+        {
+          "role": "user",
+          "text": "Run the documented offline validation command.",
+          "truncated": false
+        },
+        {
+          "role": "tool_call",
+          "text": "shell: validate --offline",
+          "truncated": false
+        },
+        {
+          "role": "tool_output",
+          "text": "shell status=Completed exit_code=Some(0)\nAll 42 checks passed. This is the established validation command.",
+          "truncated": false
+        },
+        {
+          "role": "assistant",
+          "text": "Validation completed.",
+          "truncated": false
+        }
+      ]
+    },
+    "expected_models": [
+      "gpt-6-luna"
+    ],
+    "expected_efforts": [
+      "low"
+    ],
+    "rationale": "A direct repeat of a known command remains routine."
+  }
+]

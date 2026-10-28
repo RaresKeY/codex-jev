@@ -1077,6 +1077,11 @@ impl App {
             AppEvent::EnableJevAuto => {
                 self.chat_widget.enable_jev_auto();
             }
+            AppEvent::JevContextRequested { id, thread_id, reply } => {
+                if self.chat_widget.thread_id() == thread_id && self.chat_widget.jev_route_is_current(id) {
+                    let _ = reply.0.send(app_server.request_handle());
+                }
+            }
             AppEvent::JevRouteReady { id, thread_id, result } => {
                 if self.chat_widget.thread_id() != thread_id || !self.chat_widget.jev_route_is_current(id) {
                     return Ok(AppRunControl::Continue);

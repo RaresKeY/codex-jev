@@ -40,6 +40,7 @@ pub(crate) enum StatusSurfacePreviewItem {
     Model,
     ModelWithReasoning,
     Reasoning,
+    JevStats,
     TaskProgress,
 }
 
@@ -78,6 +79,7 @@ impl StatusSurfacePreviewItem {
             StatusSurfacePreviewItem::Model => "gpt-5.2-codex",
             StatusSurfacePreviewItem::ModelWithReasoning => "gpt-5.2-codex medium",
             StatusSurfacePreviewItem::Reasoning => "medium",
+            StatusSurfacePreviewItem::JevStats => "Jev 0.8s M82% E91% 480/12 tok",
             StatusSurfacePreviewItem::TaskProgress => "Tasks 0/0",
         }
     }
@@ -116,6 +118,7 @@ impl StatusSurfacePreviewItem {
             Self::Model,
             Self::ModelWithReasoning,
             Self::Reasoning,
+            Self::JevStats,
             Self::TaskProgress,
         ]
         .into_iter()

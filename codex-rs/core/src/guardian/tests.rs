@@ -3216,6 +3216,12 @@ async fn guardian_review_retries_transient_session_failure_then_approves() -> an
                 "server_is_overloaded",
                 "temporary reviewer overload",
             ),
+            // Exhaust the reviewer's one stream retry before its outer session retry.
+            sse_failed(
+                "resp-session-retry-failure",
+                "server_is_overloaded",
+                "temporary reviewer overload",
+            ),
             sse(vec![
                 ev_response_created("resp-approved"),
                 ev_assistant_message("msg-approved", &approval),
@@ -3247,7 +3253,7 @@ async fn guardian_review_retries_transient_session_failure_then_approves() -> an
         metadata.guardian_session_kind,
         Some(codex_analytics::GuardianReviewSessionKind::TrunkReused)
     ));
-    assert_eq!(request_log.requests().len(), 2);
+    assert_eq!(request_log.requests().len(), 3);
     Ok(())
 }
 

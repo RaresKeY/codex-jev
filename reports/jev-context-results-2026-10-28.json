@@ -1,0 +1,881 @@
+{
+  "schema": 1,
+  "repeats": 2,
+  "hashes": {
+    "old": {
+      "route.py": "fc599d5c66d2689c6068d7b202bfde8c007a89be5c3f21c7c2aba8778170a332",
+      "policy.json": "4546108869b7ca757a8db2777ad65744364553a5521b1c8b99cea4c756c5445c"
+    },
+    "new": {
+      "route.py": "9d0e1e041c057178092f07d0049dcc70014101ae45ec733d75051eeba3abca18",
+      "policy.json": "5ec3b31b54a951e6af7683d740cc2c5898caab1ed3f99acc61670620c8bea217"
+    }
+  },
+  "cases_sha256": "ee2ad8a4f53afc198a9723d8f27fb6b39d0748078b3e22c60eab3074b299d11c",
+  "summary": {
+    "old": {
+      "requests": 24,
+      "errors": 0,
+      "model_match": 12,
+      "effort_match": 18,
+      "pair_match": 12,
+      "median_seconds": 0.418,
+      "input_tokens": 47788,
+      "output_tokens": 3074
+    },
+    "new": {
+      "requests": 24,
+      "errors": 0,
+      "model_match": 24,
+      "effort_match": 21,
+      "pair_match": 21,
+      "median_seconds": 0.401,
+      "input_tokens": 55392,
+      "output_tokens": 3067
+    }
+  },
+  "results": [
+    {
+      "case": "complex-known-method",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 1.0,
+        "effort_confidence": 1.0,
+        "input_tokens": 2293,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.384
+    },
+    {
+      "case": "complex-known-method",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.99,
+        "effort_confidence": 0.52,
+        "input_tokens": 1992,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.393
+    },
+    {
+      "case": "complex-known-method",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 1.0,
+        "effort_confidence": 1.0,
+        "input_tokens": 2293,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.423
+    },
+    {
+      "case": "complex-known-method",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 1.0,
+        "effort_confidence": 0.57,
+        "input_tokens": 1992,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.452
+    },
+    {
+      "case": "control-image",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.95,
+        "effort_confidence": 0.97,
+        "input_tokens": 2214,
+        "output_tokens": 118
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.437
+    },
+    {
+      "case": "control-image",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.97,
+        "effort_confidence": 0.96,
+        "input_tokens": 1936,
+        "output_tokens": 118
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.454
+    },
+    {
+      "case": "control-image",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.94,
+        "effort_confidence": 0.97,
+        "input_tokens": 2214,
+        "output_tokens": 118
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.409
+    },
+    {
+      "case": "control-image",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.98,
+        "effort_confidence": 0.96,
+        "input_tokens": 1936,
+        "output_tokens": 118
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.423
+    },
+    {
+      "case": "control-new-topic",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.88,
+        "effort_confidence": 0.9,
+        "input_tokens": 2275,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.412
+    },
+    {
+      "case": "control-new-topic",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.96,
+        "effort_confidence": 0.95,
+        "input_tokens": 2002,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.406
+    },
+    {
+      "case": "control-new-topic",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.93,
+        "effort_confidence": 0.94,
+        "input_tokens": 2275,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.399
+    },
+    {
+      "case": "control-new-topic",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.96,
+        "effort_confidence": 0.95,
+        "input_tokens": 2002,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.434
+    },
+    {
+      "case": "control-repeat",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.99,
+        "effort_confidence": 0.99,
+        "input_tokens": 2272,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.57
+    },
+    {
+      "case": "control-repeat",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.92,
+        "effort_confidence": 0.96,
+        "input_tokens": 1994,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.365
+    },
+    {
+      "case": "control-repeat",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.99,
+        "effort_confidence": 0.99,
+        "input_tokens": 2272,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.4
+    },
+    {
+      "case": "control-repeat",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.95,
+        "effort_confidence": 0.96,
+        "input_tokens": 1994,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.378
+    },
+    {
+      "case": "control-writing",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.89,
+        "effort_confidence": 0.87,
+        "input_tokens": 2277,
+        "output_tokens": 130
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.431
+    },
+    {
+      "case": "control-writing",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.95,
+        "effort_confidence": 0.94,
+        "input_tokens": 2004,
+        "output_tokens": 130
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.396
+    },
+    {
+      "case": "control-writing",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.88,
+        "effort_confidence": 0.86,
+        "input_tokens": 2277,
+        "output_tokens": 130
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.415
+    },
+    {
+      "case": "control-writing",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.99,
+        "effort_confidence": 0.95,
+        "input_tokens": 2004,
+        "output_tokens": 130
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.385
+    },
+    {
+      "case": "established-procedure",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.99,
+        "effort_confidence": 0.96,
+        "input_tokens": 2295,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.391
+    },
+    {
+      "case": "established-procedure",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.43,
+        "effort_confidence": 0.62,
+        "input_tokens": 1995,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": true,
+      "pair_match": false,
+      "seconds": 0.49
+    },
+    {
+      "case": "established-procedure",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.97,
+        "effort_confidence": 0.97,
+        "input_tokens": 2295,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.373
+    },
+    {
+      "case": "established-procedure",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.55,
+        "effort_confidence": 0.57,
+        "input_tokens": 1995,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": true,
+      "pair_match": false,
+      "seconds": 0.431
+    },
+    {
+      "case": "failed-hypotheses",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "stats": {
+        "model_confidence": 0.99,
+        "effort_confidence": 0.56,
+        "input_tokens": 2292,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.386
+    },
+    {
+      "case": "failed-hypotheses",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "stats": {
+        "model_confidence": 0.68,
+        "effort_confidence": 0.34,
+        "input_tokens": 1995,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.405
+    },
+    {
+      "case": "failed-hypotheses",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "stats": {
+        "model_confidence": 0.99,
+        "effort_confidence": 0.52,
+        "input_tokens": 2292,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.395
+    },
+    {
+      "case": "failed-hypotheses",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "stats": {
+        "model_confidence": 0.59,
+        "effort_confidence": 0.36,
+        "input_tokens": 1995,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.444
+    },
+    {
+      "case": "implementation-behind-visual",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.93,
+        "effort_confidence": 0.97,
+        "input_tokens": 2300,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.395
+    },
+    {
+      "case": "implementation-behind-visual",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.85,
+        "effort_confidence": 0.76,
+        "input_tokens": 1996,
+        "output_tokens": 130
+      },
+      "model_match": false,
+      "effort_match": true,
+      "pair_match": false,
+      "seconds": 0.395
+    },
+    {
+      "case": "implementation-behind-visual",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.95,
+        "effort_confidence": 0.97,
+        "input_tokens": 2300,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.39
+    },
+    {
+      "case": "implementation-behind-visual",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.83,
+        "effort_confidence": 0.75,
+        "input_tokens": 1996,
+        "output_tokens": 130
+      },
+      "model_match": false,
+      "effort_match": true,
+      "pair_match": false,
+      "seconds": 0.384
+    },
+    {
+      "case": "long-output-failure-tail",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "stats": {
+        "model_confidence": 0.93,
+        "effort_confidence": 0.25,
+        "input_tokens": 2590,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.449
+    },
+    {
+      "case": "long-output-failure-tail",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "stats": {
+        "model_confidence": 0.71,
+        "effort_confidence": 0.31,
+        "input_tokens": 2001,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.4
+    },
+    {
+      "case": "long-output-failure-tail",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6-astra",
+      "effort": "xhigh",
+      "stats": {
+        "model_confidence": 0.96,
+        "effort_confidence": 0.29,
+        "input_tokens": 2590,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.416
+    },
+    {
+      "case": "long-output-failure-tail",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "stats": {
+        "model_confidence": 0.73,
+        "effort_confidence": 0.29,
+        "input_tokens": 2001,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.455
+    },
+    {
+      "case": "technical-correctness",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 1.0,
+        "effort_confidence": 0.97,
+        "input_tokens": 2304,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.402
+    },
+    {
+      "case": "technical-correctness",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.88,
+        "effort_confidence": 0.46,
+        "input_tokens": 1995,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.433
+    },
+    {
+      "case": "technical-correctness",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 1.0,
+        "effort_confidence": 0.94,
+        "input_tokens": 2304,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.399
+    },
+    {
+      "case": "technical-correctness",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.88,
+        "effort_confidence": 0.45,
+        "input_tokens": 1995,
+        "output_tokens": 129
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.403
+    },
+    {
+      "case": "unloaded-history",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 1.0,
+        "effort_confidence": 0.99,
+        "input_tokens": 2290,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.371
+    },
+    {
+      "case": "unloaded-history",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "stats": {
+        "model_confidence": 0.16,
+        "effort_confidence": 0.54,
+        "input_tokens": 1991,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.414
+    },
+    {
+      "case": "unloaded-history",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 1.0,
+        "effort_confidence": 0.99,
+        "input_tokens": 2290,
+        "output_tokens": 128
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.377
+    },
+    {
+      "case": "unloaded-history",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "stats": {
+        "model_confidence": 0.12,
+        "effort_confidence": 0.56,
+        "input_tokens": 1991,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": false,
+      "pair_match": false,
+      "seconds": 0.543
+    },
+    {
+      "case": "visual-review-ready",
+      "variant": "new",
+      "repeat": 0,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.97,
+        "effort_confidence": 0.95,
+        "input_tokens": 2294,
+        "output_tokens": 130
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.422
+    },
+    {
+      "case": "visual-review-ready",
+      "variant": "old",
+      "repeat": 0,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.48,
+        "effort_confidence": 0.55,
+        "input_tokens": 1993,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": true,
+      "pair_match": false,
+      "seconds": 0.451
+    },
+    {
+      "case": "visual-review-ready",
+      "variant": "new",
+      "repeat": 1,
+      "model": "gpt-6.1-terra",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.97,
+        "effort_confidence": 0.92,
+        "input_tokens": 2294,
+        "output_tokens": 130
+      },
+      "model_match": true,
+      "effort_match": true,
+      "pair_match": true,
+      "seconds": 0.434
+    },
+    {
+      "case": "visual-review-ready",
+      "variant": "old",
+      "repeat": 1,
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "stats": {
+        "model_confidence": 0.56,
+        "effort_confidence": 0.44,
+        "input_tokens": 1993,
+        "output_tokens": 129
+      },
+      "model_match": false,
+      "effort_match": true,
+      "pair_match": false,
+      "seconds": 0.463
+    }
+  ],
+  "limits": "Synthetic predeclared routing rubric; no executor quality or calibration measurement. Same model/effort criteria; candidate adds transcript interpretation guidance. At most two concurrent helper processes and no retries.",
+  "candidate_helper_ast_sha256": "6470b5959b0125d2973cde9b8a575f787e935f57063af7d22eee43f2ad50533a",
+  "real_history_probe": {
+    "success": true,
+    "items": 32,
+    "types": {
+      "reasoning": 16,
+      "commandExecution": 11,
+      "agentMessage": 1,
+      "fileChange": 4
+    },
+    "has_older": true,
+    "read_seconds": 0.292,
+    "rpc_response_bytes": 107214,
+    "private_content_saved": false
+  },
+  "offline_verification": {
+    "rust_focused_tests": 19,
+    "python_route_tests": 11,
+    "production_fixture_projection": "passed",
+    "bounded_server_rpc": "passed",
+    "snapshot_disclosure": "passed",
+    "scoped_clippy": "passed with -D warnings",
+    "full_formatter": "passed"
+  },
+  "formatted_helper_ast_matches_tested": true
+}

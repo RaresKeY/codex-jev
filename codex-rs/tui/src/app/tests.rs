@@ -900,6 +900,8 @@ fn set_test_initial_prompt(app: &mut App, initial_prompt: String) {
         terminal_title_invalid_items_warned: app.terminal_title_invalid_items_warned.clone(),
         session_telemetry: app.session_telemetry.clone(),
     });
+    // These upstream startup tests exercise direct submission; Jev has dedicated coverage.
+    app.chat_widget.disable_jev_auto();
 }
 
 #[tokio::test]

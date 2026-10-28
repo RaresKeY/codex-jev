@@ -324,6 +324,35 @@ Codex supports running connected app-server and exec-server on different operati
 Read specs/_readme.md before changing fork behavior. Work in this normal checkout.
 Keep the upstream patch small. Fork additions use the upstream Apache 2.0 license.
 Never commit credentials, private chats, raw provider responses, local .env files,
-or build outputs. Keep upstream workflows disabled. Use tools/fork/rust.sh and the
-pinned toolchain for build operations. Install only codex-jev, never replace codex.
+or build outputs. Keep upstream workflows disabled; the fork-owned
+`.github/workflows/jev-ci.yml` is allowed. Use the pinned toolchain in CI and
+tools/fork/rust.sh for explicitly requested local build operations.
+Install only codex-jev, never replace codex.
 Do not run tests or paid inference unless explicitly requested by the user.
+
+### Build location and optimization
+
+- Default to standard GitHub-hosted Actions runners for native compilation,
+  native regression tests and release builds, keeping the workstation CPU
+  available. Do not start heavy local builds or use this workstation as a
+  self-hosted runner unless the user explicitly requests local compilation.
+  Lightweight local formatting and source checks remain appropriate; the test
+  authorization rule above still applies.
+- Use the fork workflow and its manual native-build option. Validate the exact
+  revision containing the changes; a build of an older remote revision does not
+  validate uncommitted work. Normal authorization for pushing or publishing
+  still applies. If CI is unavailable, report that rather than silently starting
+  a local native build.
+- Use standard hosted runners such as `ubuntu-24.04` for this public repository;
+  larger runners are paid. Keep artifact retention short and respect storage
+  allowances so free runner compute does not imply unrestricted free storage.
+- During development, prioritize compilation speed: use `dev-small`
+  (`opt-level = 1`, no debug symbols) for development binaries and allow
+  `ci-test` (`opt-level = 0`) for faster test iteration. Keep caches separate by
+  toolchain, lockfile and profile. Do not increase development optimization
+  without a measured need.
+- For published releases, build with `--profile release` (Cargo's default
+  `opt-level = 3`, the workspace's thin LTO and four codegen units). Validate and
+  package binaries from that same profile. Development artifacts are candidates,
+  not release binaries. The current `package.sh` selects `dev-small`; update its
+  input selection before using it to package a release build.

@@ -634,7 +634,8 @@ debug = "line-tables-only"
 
 [profile.dev-small]
 inherits = "dev"
-opt-level = 3
+# Keep local fork rebuilds practical while retaining basic optimization.
+opt-level = 1
 debug = "none"
 strip = "symbols"
 

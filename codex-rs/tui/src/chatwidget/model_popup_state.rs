@@ -78,7 +78,15 @@ impl ChatWidget {
         let selected_model = selected_index.and_then(|index| self.model_popup_model_ids.get(index));
         params.initial_selected_idx = model_ids
             .iter()
-            .position(|model| Some(model) == selected_model);
+            .position(|model| Some(model) == selected_model)
+            .or_else(|| {
+                // A missing current model must not implicitly opt into Jev.
+                if !self.jev_auto.enabled && !params.items.iter().any(|item| item.is_current) {
+                    model_ids.iter().position(|model| model != "jev-auto")
+                } else {
+                    None
+                }
+            });
         self.model_popup_model_ids = model_ids;
         if let Some(view_id) = params.view_id.filter(|_| selected_index.is_some()) {
             self.bottom_pane

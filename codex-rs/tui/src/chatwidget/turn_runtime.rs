@@ -78,6 +78,9 @@ impl ChatWidget {
     pub(super) fn on_task_started(&mut self) {
         self.status_state.program_status_after_turn =
             crate::terminal_program_status::ProgramStatus::Idle;
+        self.cancel_jev_route();
+        self.jev_auto.context.recent_response = None;
+        self.jev_auto.context.last_turn_status = Some("in_progress");
         self.bottom_pane.dismiss_composer_sparkle();
         self.clear_context_compaction();
         self.input_queue.user_turn_pending_start = false;
@@ -154,6 +157,8 @@ impl ChatWidget {
                 }
             })
             .unwrap_or_default();
+        self.jev_auto.context.recent_response = (!notification_response.is_empty())
+            .then(|| crate::jev_route::JevExcerpt::new(&notification_response));
         self.transcript.saw_copy_source_this_turn = false;
         // If a stream is currently active, finalize it.
         self.flush_answer_and_plan_streams();

@@ -50,6 +50,8 @@ def main():
             if name.startswith("bazel-")
             else "just"
             if name.startswith("just-")
+            else "dotslash"
+            if name.startswith("dotslash-")
             else "uv"
         )
         if "member" in pin:
