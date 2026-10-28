@@ -26,6 +26,13 @@ class InstallTransactionTests(unittest.TestCase):
             path.chmod(0o755)
         for name in ("jev-route.py", "policy.json", "LICENSE", "NOTICE"):
             (self.dist / name).write_text("offline fixture\n")
+        for name in ("jev_launcher.py", "jev_session.py", "jev_update.py"):
+            shutil.copy2(INSTALLER.parent / name, self.dist / name)
+        for name in ("verify_trust.py", "incident-policy.json"):
+            shutil.copy2(INSTALLER.parent / "ca-trust" / name, self.dist / name)
+        (self.dist / "RELEASE.json").write_text(
+            '{"version":"0.165.0-jev.1","profile":"dev-small","target":"linux-x86_64"}\n'
+        )
         (self.dist / "VERSION").write_text("f5cd3fc5466a\n")
         self.data = self.home / ".local/share/codex-jev"
         self.config = self.home / ".config/codex-jev"

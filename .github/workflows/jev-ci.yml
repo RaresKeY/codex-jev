@@ -10,6 +10,11 @@ on:
         description: Build Linux binaries and run focused Rust regressions
         type: boolean
         default: false
+      profile:
+        description: Optimization profile for the native candidate
+        type: choice
+        options: [dev-small, release]
+        default: dev-small
 
 permissions:
   contents: read
@@ -52,6 +57,7 @@ jobs:
       CARGO_BUILD_JOBS: "2"
       CARGO_INCREMENTAL: "0"
       CARGO_TARGET_DIR: ${{ github.workspace }}/.build/target
+      CODEX_JEV_BUILD_PROFILE: ${{ inputs.profile }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -73,18 +79,18 @@ jobs:
           python3 tools/fork/v8-env.py | sed "s|=/source/|=$GITHUB_WORKSPACE/|" >> "$GITHUB_ENV"
       - name: Build fork binaries
         working-directory: codex-rs
-        run: cargo build --locked --profile dev-small --bin codex --bin codex-code-mode-host
+        run: cargo build --locked --profile "$CODEX_JEV_BUILD_PROFILE" --bin codex --bin codex-code-mode-host
       - name: Focused Jev and retry regressions
         working-directory: codex-rs
         run: |
-          just test --locked --cargo-profile dev-small -p codex-tui --lib -E 'test(jev) | test(model_selection_popup) | test(model_picker) | test(bedrock)'
-          just test --locked --cargo-profile dev-small -p codex-api -p codex-protocol --lib -E 'test(capacity) | test(overload) | test(retry_delay)'
-          just test --locked --cargo-profile dev-small -p codex-core --test all -E 'test(retry_after::)'
+          just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-tui --lib -E 'test(jev) | test(model_selection_popup) | test(model_picker) | test(bedrock)'
+          just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-api -p codex-protocol --lib -E 'test(capacity) | test(overload) | test(retry_delay)'
+          just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-core --test all -E 'test(retry_after::)'
       - name: Package candidate
         run: bash tools/fork/package.sh
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: codex-jev-linux-x86_64-${{ github.sha }}
+          name: codex-jev-linux-x86_64-${{ inputs.profile }}-${{ github.sha }}
           path: |
             .build/release/codex-jev-linux-x86_64.tar.gz
             .build/release/SHA256SUMS

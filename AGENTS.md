@@ -354,5 +354,6 @@ Do not run tests or paid inference unless explicitly requested by the user.
 - For published releases, build with `--profile release` (Cargo's default
   `opt-level = 3`, the workspace's thin LTO and four codegen units). Validate and
   package binaries from that same profile. Development artifacts are candidates,
-  not release binaries. The current `package.sh` selects `dev-small`; update its
-  input selection before using it to package a release build.
+  not release binaries. Set `CODEX_JEV_BUILD_PROFILE=release` for matching build
+  and package inputs; the workflow exposes the same profile choice. Keep release
+  publication reviewed and assign a unique fork version to each update.

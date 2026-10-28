@@ -5,8 +5,11 @@ if [[ $# != 0 && ( $# != 2 || ${1:-} != --key-file ) ]]; then
   exit 1
 fi
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
-source_bin="${CODEX_JEV_DIST:-$root/.build/target/dev-small}"
+profile="${CODEX_JEV_BUILD_PROFILE:-dev-small}"
+source_bin="${CODEX_JEV_DIST:-$root/.build/target/$profile}"
+runtime="$root/tools/fork"
 if [[ -n "${CODEX_JEV_DIST:-}" ]]; then
+  runtime="$source_bin"
   revision=$(< "$source_bin/VERSION")
   helper="$source_bin/jev-route.py"
   policy="$source_bin/policy.json"
@@ -23,6 +26,14 @@ for binary in codex codex-code-mode-host; do
 done
 for input in "$helper" "$policy" "$notices/LICENSE" "$notices/NOTICE"; do
   [[ -r "$input" && -f "$input" ]] || { printf 'Missing install input: %s\n' "$input" >&2; exit 1; }
+done
+for input in jev_launcher.py jev_session.py jev_update.py; do
+  [[ -f "$runtime/$input" ]] || { printf 'Missing launcher input: %s\n' "$input" >&2; exit 1; }
+done
+trust="$runtime/ca-trust"
+[[ -d "$trust" ]] || trust="$runtime"
+for input in verify_trust.py incident-policy.json; do
+  [[ -f "$trust/$input" ]] || { printf 'Missing trust input: %s\n' "$input" >&2; exit 1; }
 done
 key_file_path=
 if [[ ${1:-} == --key-file ]]; then
@@ -74,6 +85,20 @@ install -m 755 "$source_bin/codex-code-mode-host" "$install_root/codex-code-mode
 install -m 644 "$helper" "$install_root/jev-route.py"
 install -m 644 "$policy" "$install_root/policy.json"
 install -m 644 "$notices/LICENSE" "$notices/NOTICE" "$install_root/"
+install -m 644 "$runtime/jev_launcher.py" "$runtime/jev_session.py" "$runtime/jev_update.py" "$install_root/"
+install -m 644 "$trust/verify_trust.py" "$trust/incident-policy.json" "$install_root/"
+if [[ -f "$source_bin/RELEASE.json" ]]; then
+  install -m 644 "$source_bin/RELEASE.json" "$install_root/"
+else
+  python3 - "$source_bin/codex" "$revision" "$install_root/RELEASE.json" "$profile" <<'METADATA'
+import json
+from pathlib import Path
+import subprocess
+import sys
+version = subprocess.check_output([sys.argv[1], "--version"], text=True).strip().removeprefix("codex-cli ")
+Path(sys.argv[3]).write_text(json.dumps({"version": version, "revision": sys.argv[2], "profile": sys.argv[4], "target": "linux-x86_64"}) + "\n")
+METADATA
+fi
 launcher_tmp=$(mktemp "$HOME/.local/bin/.codex-jev.XXXXXXXX")
 cat > "$launcher_tmp" <<'LAUNCHER'
 #!/usr/bin/env bash
@@ -83,7 +108,7 @@ if [[ -z "${CODEX_JEV_KEY_FILE:-}" && -f "$key_pointer" ]]; then
   IFS= read -r CODEX_JEV_KEY_FILE < "$key_pointer"
   export CODEX_JEV_KEY_FILE
 fi
-exec "${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev/current/codex-jev-native" "$@"
+exec python3 "${XDG_DATA_HOME:-$HOME/.local/share}/codex-jev/current/jev_launcher.py" "$@"
 LAUNCHER
 chmod 755 "$launcher_tmp"
 if [[ -e "$HOME/.local/bin/codex-jev" || -L "$HOME/.local/bin/codex-jev" ]]; then

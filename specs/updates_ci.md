@@ -12,9 +12,53 @@ next launch can show the update banner or popup. A dismissed version is suppress
 for that popup. The detected install method selects the upgrade action. Source
 and debug builds skip the release update flow.
 
-The fork additionally suppresses upstream upgrade offers for `-jev.` versions in
-`codex-rs/tui/src/updates.rs`. There is currently no fork release-feed updater.
-Fork upgrades use the project installer, independently of upstream `codex`.
+The native fork suppresses upstream upgrade offers for `-jev.` versions in
+`codex-rs/tui/src/updates.rs`. The installed Python launcher owns fork updates,
+independently of upstream `codex`. Interactive startup checks cached fork release
+metadata and refreshes it in a background process after 20 hours. A newly fetched
+release is offered on the next launch. The prompt offers Update now, Skip this
+time and Skip this version; installation requires an explicit selection. Help,
+version, noninteractive commands and app-server processes never prompt.
+
+`codex-jev update --check` checks immediately; `codex-jev update` asks before
+installing and `--yes` explicitly authorizes installation. The launcher honors
+`check_for_update_on_startup = false` and `CODEX_JEV_CHECK_UPDATES=0`. Its XDG cache
+is separate from upstream version metadata. This updater supports Linux x86_64
+and requires Python 3.11+, OpenSSL and the existing installer prerequisites.
+
+The feed is the public `RaresKeY/codex-jev` GitHub releases API, including
+prereleases. Only complete, numerically newer `vX.Y.Z-jev.N` releases with the
+canonical archive/checksum assets qualify. Before HTTPS, the bundled incident
+trust guard inspects the active system/Python stores; failures block downloads
+and are recorded for display on the next launch. TLS verification remains on,
+and redirects must retain HTTPS. An update verifies SHA-256 before extraction,
+rejects unknown, duplicate, linked or escaping members, checks release metadata
+for the platform and release profile, and checks the binary's actual version.
+Only then does it invoke the transactional installer. Failed updates preserve
+the current installation. No local Rust build is part of updating.
+
+Publishing a new update still requires a reviewed release with a unique fork
+version and optimized artifacts. CI candidate artifacts alone do not enter the
+update feed. Existing installations acquire the launcher once through the
+updated installer; future published releases carry it in their payload.
+
+## Foreground sessions and Workspaces
+
+The installed launcher's `--no-daemon` path owns a foreground fork app server on
+a private Unix socket and connects a matching native TUI to it. The supervisor
+reaps both processes when the TUI exits; it does not register, replace or restart
+the shared daemon. Configuration/feature overrides reach the server and prompt
+arguments remain literal. Native direct execution retains upstream's embedded
+`--no-daemon` behavior.
+
+Session discovery uses `$XDG_RUNTIME_DIR/codex-jev/sessions/s-*/session.json`.
+The directories are private and manifests contain only PID/start-time identity,
+socket path and cwd. Workspaces verifies ownership, modes, socket type, matching
+native executable identity and all three process start times before connecting.
+It merges loaded root-thread metadata from these servers with the existing
+shared catalog and sends explicit renames to the owning connection. No transcript
+subscription, prompt submission, daemon restart or terminal-input injection is
+needed. Stale manifests cannot select a reused PID or an arbitrary socket.
 
 ## Maintenance
 
@@ -40,7 +84,7 @@ the intended changes; an older remote revision cannot validate a dirty checkout.
 
 `.github/workflows/jev-ci.yml` defines Rust formatting and offline helper and
 installer checks for pushes to `main`, pull requests and manual dispatch. Its
-optional `native` input
+optional `native` input and `profile` choice (`dev-small` or `release`)
 adds Linux Rust regressions, both native binaries and a candidate archive retained
 for seven days. Native validation is manual and has a six-hour timeout to bound
 cold-build cost.
@@ -55,8 +99,10 @@ Development candidates use `dev-small` (`opt-level = 1`, no debug symbols);
 `ci-test` (`opt-level = 0`) is available for faster test iteration. Published
 release builds must use `--profile release`, with Cargo's default optimization
 level 3, thin LTO and four codegen units. Packaging must select the matching
-release outputs. The current workflow and `package.sh` produce development
-candidates from `dev-small`; they do not implement release publication.
+release outputs. `CODEX_JEV_BUILD_PROFILE` selects matching build/package inputs;
+it defaults to `dev-small`. The workflow produces candidates from the selected
+profile and does not publish releases. Archives include `RELEASE.json` and the
+launcher, updater, foreground supervisor and trust guard alongside both binaries.
 
 Standard GitHub-hosted runner compute is free for public repositories. Larger
 runners are billed, and artifact/cache storage has separate allowances. Keep

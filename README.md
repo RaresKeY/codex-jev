@@ -49,11 +49,15 @@ Native Cargo builds are possible with the pinned toolchain, but the installer
 expects the container wrapper's output directory.
 
 Fork CI checks Rust formatting and runs offline helper tests on pushes and pull
-requests. Its manual
-`native` option builds Linux candidates and runs focused Rust regressions.
+requests. Its manual `native` option builds Linux candidates and runs focused
+Rust regressions; choose `release` for optimized release candidates.
 Upstream integration and release publication remain reviewed operations; see
-[updates and CI](specs/updates_ci.md). Fork update prompts are currently disabled,
-so installing an updated Jev build uses this fork's installer.
+[updates and CI](specs/updates_ci.md). The updated installer adds a fork-specific
+startup update prompt. It checks published GitHub releases in the background and
+offers a newer build on the next launch; accepting downloads a verified optimized
+archive and runs the installer. Use `codex-jev update --check` to check immediately,
+or `codex-jev update` to update with confirmation. Python 3.11+ and OpenSSL are
+required. `CODEX_JEV_CHECK_UPDATES=0` disables startup checks.
 
 ## Use Auto
 
@@ -127,10 +131,11 @@ routing and saves the draft through the existing thread input state.
 
 The CLI uses the ordinary Codex home/auth/settings by default, so existing sign-in
 and chats are available. Set `CODEX_HOME` yourself for a separate profile.
-Use `--no-daemon` to run this fork's backend and capacity retries. A shared
-upstream server uses its own backend implementation.
-Upstream automatic update offers are disabled for fork versions; update this fork
-from source using the documented process.
+Use `--no-daemon` to run this fork's backend and capacity retries. The installed
+launcher owns a private foreground server that exits with the TUI. Konsole
+Workspaces can observe it through verified local discovery metadata while
+retaining its ordinary shared-daemon catalog. Upstream automatic update offers
+remain disabled for fork versions; the launcher checks only this fork's releases.
 
 ## Maintenance
 

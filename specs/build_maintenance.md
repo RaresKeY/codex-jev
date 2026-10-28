@@ -8,8 +8,9 @@ Native builds and native regressions default to standard GitHub-hosted Actions
 runners; heavy local compilation requires an explicit user request. Development
 uses low optimization (`dev-small` level 1, or `ci-test` level 0 for test
 iteration). Published releases require the release profile with level 3 and thin
-LTO, plus packaging from the matching output directory. The current packaging
-helper selects development candidates only. See [updates_ci.md](updates_ci.md)
+LTO, plus packaging from the matching output directory. `CODEX_JEV_BUILD_PROFILE`
+selects the matching build/package profile and defaults to `dev-small`.
+See [updates_ci.md](updates_ci.md)
 for CI activation, artifact retention and the distinction between candidates and
 release builds.
 
@@ -28,7 +29,9 @@ used local workspace version 0.0.0; fork lock entries are synchronized to the fo
 
 `install.sh` installs only codex-jev under the user's .local/bin and versioned
 XDG data directory, plus code-mode-host, route helper, policy and license notices.
-The launcher loads an optional external key-file pointer from XDG config. It
+The Bash entry point loads an optional external key-file pointer from XDG config
+and invokes the installed Python launcher. The launcher offers opt-in fork
+updates and supervises private foreground servers for `--no-daemon` sessions. It
 shares Codex's default home unless CODEX_HOME is explicitly supplied. The install
 is separate from upstream CLI package management. Fork update offers never point
 to OpenAI's release/package install actions.
@@ -39,6 +42,8 @@ source revision, so reinstalling a dirty build cannot overwrite a running binary
 It stages the complete payload before atomically replacing the launcher and
 `current` symlink. Failed staging removes its candidate and preserves the active
 release; prior installed releases remain available.
+Every payload also carries the launcher/update/session modules, the incident
+trust verifier and policy, and `RELEASE.json` with version/profile/target identity.
 Installer publication is serialized with a project-local flock. Launcher and
 optional key-pointer backups are staged before publication and restored if the
 final `current` switch fails; failed candidates and temporary files are removed.
