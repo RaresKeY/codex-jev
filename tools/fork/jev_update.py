@@ -23,11 +23,11 @@ ARCHIVE = "codex-jev-linux-x86_64.tar.gz"
 RELEASES_URL = f"https://api.github.com/repos/{REPOSITORY}/releases?per_page=20"
 MAX_ARCHIVE = 512 * 1024 * 1024
 TTL = 20 * 3600
+# Preserve the original updater contract; the installer embeds additional modules.
 PAYLOAD = {
     "codex",
     "codex-code-mode-host",
     "jev-route.py",
-    "jev_budget.py",
     "policy.json",
     "LICENSE",
     "NOTICE",
