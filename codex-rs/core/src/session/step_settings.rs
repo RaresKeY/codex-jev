@@ -42,6 +42,7 @@ pub(crate) struct ResolvedStepSettings {
     /// Inputs for later sparse patches. Unset defaults and unsupported requested
     /// tiers must not be reconstructed from the effective values below.
     selected: Arc<StepSettings>,
+    pub(super) jev_effort: Option<ReasoningEffort>,
     pub(crate) model_info: Arc<ModelInfo>,
     /// Effective request summary: the configured value or the pinned model's default.
     pub(crate) reasoning_summary: ReasoningSummary,
@@ -66,6 +67,7 @@ impl ResolvedStepSettings {
             super::get_service_tier(selected.service_tier.clone(), features, &model_info);
         Self {
             selected,
+            jev_effort: None,
             model_info,
             reasoning_summary,
             service_tier,
@@ -74,11 +76,16 @@ impl ResolvedStepSettings {
     }
 
     pub(crate) fn reasoning_effort(&self) -> Option<&ReasoningEffort> {
-        self.selected
-            .collaboration_mode
-            .settings
-            .reasoning_effort
-            .as_ref()
+        self.jev_effort.as_ref().or_else(|| {
+            self.selected
+                .collaboration_mode
+                .settings
+                .reasoning_effort
+                .as_ref()
+                .filter(
+                    |effort| !matches!(effort, ReasoningEffort::Custom(value) if value == "jev"),
+                )
+        })
     }
 
     pub(crate) fn effective_reasoning_effort(&self) -> Option<ReasoningEffort> {
@@ -90,6 +97,7 @@ impl ResolvedStepSettings {
     pub(crate) fn effective_collaboration_mode(&self) -> CollaborationMode {
         let mut collaboration_mode = self.selected.collaboration_mode.clone();
         collaboration_mode.settings.model = self.model_info.slug.clone();
+        collaboration_mode.settings.reasoning_effort = self.reasoning_effort().cloned();
         collaboration_mode
     }
 
