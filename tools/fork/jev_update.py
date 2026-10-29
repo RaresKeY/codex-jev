@@ -27,6 +27,7 @@ PAYLOAD = {
     "codex",
     "codex-code-mode-host",
     "jev-route.py",
+    "jev_budget.py",
     "policy.json",
     "LICENSE",
     "NOTICE",

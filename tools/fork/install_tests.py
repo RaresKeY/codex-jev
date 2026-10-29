@@ -1,7 +1,9 @@
 """Offline installer transaction checks using temporary homes and fake payloads."""
 
+import json
 import os
 from pathlib import Path
+import runpy
 import shlex
 import shutil
 import subprocess
@@ -26,6 +28,9 @@ class InstallTransactionTests(unittest.TestCase):
             path.chmod(0o755)
         for name in ("jev-route.py", "policy.json", "LICENSE", "NOTICE"):
             (self.dist / name).write_text("offline fixture\n")
+        shutil.copy2(
+            INSTALLER.parents[2] / "jev/jev_budget.py", self.dist / "jev_budget.py"
+        )
         for name in ("jev_launcher.py", "jev_session.py", "jev_update.py"):
             shutil.copy2(INSTALLER.parent / name, self.dist / name)
         for name in ("verify_trust.py", "incident-policy.json"):
@@ -106,6 +111,43 @@ class InstallTransactionTests(unittest.TestCase):
         self.assertEqual(sorted((self.data / "releases").iterdir()), [old_release])
         self.assertEqual(sorted(self.launcher.parent.iterdir()), [self.launcher])
         self.assertEqual(sorted(self.config.iterdir()), [self.config / "key-file"])
+
+    def test_installed_budget_commands_share_accounting_and_preserve_controls(self):
+        installed = self.install()
+        self.assertEqual(installed.returncode, 0, installed.stderr)
+        state_file = self.root / "isolated-budget.sqlite3"
+        environment = {**self.env, "CODEX_JEV_BUDGET_FILE": str(state_file)}
+
+        def command(*arguments):
+            result = subprocess.run(
+                [str(self.launcher), "budget", *arguments, "--json"],
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            state = json.loads(result.stdout)
+            return {key: state[key] for key in ("enabled", "limit_tokens", "used_tokens")}
+
+        self.assertEqual(command("status"), {
+            "enabled": True, "limit_tokens": 10_000_000, "used_tokens": 0,
+        })
+        installed_budget = runpy.run_path(str(self.data / "current/jev_budget.py"))
+        budget = installed_budget["Budget"](state_file)
+        budget.settle(budget.reserve(500), 123)
+        self.assertEqual(command("off"), {
+            "enabled": False, "limit_tokens": 10_000_000, "used_tokens": 123,
+        })
+        self.assertEqual(command("set", "1000"), {
+            "enabled": False, "limit_tokens": 1000, "used_tokens": 123,
+        })
+        self.assertEqual(command("on"), {
+            "enabled": True, "limit_tokens": 1000, "used_tokens": 123,
+        })
+        self.assertEqual(command("reset"), {
+            "enabled": True, "limit_tokens": 1000, "used_tokens": 0,
+        })
 
 
 if __name__ == "__main__":
