@@ -85,7 +85,8 @@ jobs:
         run: |
           just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-tui --lib -E 'test(jev) | test(model_selection_popup) | test(model_picker) | test(bedrock)'
           just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-api -p codex-protocol --lib -E 'test(capacity) | test(overload) | test(retry_delay)'
-          just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-core --test all -E 'test(retry_after::)'
+          just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-core --lib -E 'test(jev_effort)'
+          just test --locked --cargo-profile "$CODEX_JEV_BUILD_PROFILE" -p codex-core --test all -E 'test(retry_after::) | test(jev_effort::) | test(review_jev_effort::)'
       - name: Package candidate
         run: bash tools/fork/package.sh
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
