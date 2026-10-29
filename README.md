@@ -61,8 +61,9 @@ required. `CODEX_JEV_CHECK_UPDATES=0` disables startup checks.
 
 ## Use Auto
 
-Run `codex-jev --no-daemon`; new and resumed chats start with **Auto (Jev)** enabled.
-Explicit launch model, provider or reasoning overrides (including a selected
+Run `codex-jev --no-daemon`; new chats start with **Auto (Jev)** enabled.
+Resumed effort-mode threads keep their saved mode. Explicit launch model,
+provider or reasoning overrides (including a selected
 profile) take precedence. Custom-provider and Reserve sessions keep their model;
 an acknowledged usage fallback also disables Auto for the current widget.
 With Auto enabled, each new prompt:
@@ -75,7 +76,7 @@ With Auto enabled, each new prompt:
 The footer's model-with-reasoning field and a transcript notice show the chosen
 model and effort. Selecting an explicit model disables Auto for the current
 widget/session; select **Auto (Jev)** in `/model` to enable it again. New or
-reconstructed widgets start in Auto, including when resuming a chat. Follow-up
+reconstructed widgets otherwise start in Auto, including when resuming a chat. Follow-up
 prompts during Auto execution queue for the next turn. Answers to Codex's
 structured questions retain the running turn's model. Shell commands,
 noninteractive `exec`, app-server clients and voice are outside this routing path.
@@ -136,6 +137,40 @@ launcher owns a private foreground server that exits with the TUI. Konsole
 Workspaces can observe it through verified local discovery metadata while
 retaining its ordinary shared-daemon catalog. Upstream automatic update offers
 remain disabled for fork versions; the launcher checks only this fork's releases.
+
+## Effort only (Jev)
+
+To keep a model fixed while adjusting effort between tool steps, run the updated
+fork with `codex-jev --no-daemon`. Select Luna, Terra 6.1, Sol 6.1 or Astra in
+`/model`, then choose **Effort only (Jev)**. Jev selects effort before each
+executor model step from bounded recent conversation and tool evidence.
+Selecting a manual effort exits this mode. **Auto (Jev)** remains available for
+model-and-effort routing once per user prompt.
+
+This uses the backend's existing cache-preserving effort updates where supported.
+It adds Jev calls; savings in executor usage are not guaranteed. A failed or
+budget-blocked route stops before the next executor call instead of silently
+using a fallback effort. Use the updated fork backend, not an older shared server.
+
+## Jev weekly budget
+
+The budget starts **enabled at 10,000,000 Jev input + output tokens per seven-day
+window**, shared across local sessions and both routing modes.
+
+```bash
+codex-jev budget status
+codex-jev budget set 10000000
+codex-jev budget reset
+codex-jev budget off
+codex-jev budget on
+```
+
+Disabling enforcement keeps accounting; enabling it again does not clear usage.
+Reset starts a fresh seven-day window. This controls Jev's API usage, separately
+from your Codex subscription quota. Requests already sent can still finish; the
+ledger reserves capacity and conservatively accounts for unknown usage.
+See [effort mode and budget](specs/jev_effort_budget.md) for boundaries and reset
+semantics. The source checkout also supports `python3 jev/jev_budget.py status`.
 
 ## Maintenance
 

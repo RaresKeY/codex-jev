@@ -82,7 +82,9 @@ impl ChatWidget {
             .or_else(|| {
                 // A missing current model must not implicitly opt into Jev.
                 if !self.jev_auto.enabled && !params.items.iter().any(|item| item.is_current) {
-                    model_ids.iter().position(|model| model != "jev-auto")
+                    model_ids
+                        .iter()
+                        .position(|model| model != "jev-auto" && model != "jev-effort")
                 } else {
                     None
                 }

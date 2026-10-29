@@ -144,7 +144,9 @@ impl ChatWidget {
                 SelectionItem {
                     name: preset.display_name.clone(),
                     description,
-                    is_current: !self.jev_auto.enabled && model.as_str() == current_model,
+                    is_current: !self.jev_auto.enabled
+                        && !self.jev_effort_enabled()
+                        && model.as_str() == current_model,
                     secondary_action: if requires_advanced_selection {
                         None
                     } else {
@@ -163,6 +165,10 @@ impl ChatWidget {
 
         model_ids.insert(0, "jev-auto".to_string());
         items.insert(0, self.jev_picker_item());
+        if let Some(item) = self.jev_effort_picker_item() {
+            model_ids.insert(1, "jev-effort".to_string());
+            items.insert(1, item);
+        }
 
         if !other_presets.is_empty() {
             model_ids.push("All models".to_string());
@@ -250,11 +256,16 @@ impl ChatWidget {
             presets.iter().map(|preset| preset.model.clone()).collect();
         model_ids.insert(0, "jev-auto".to_string());
         items.push(self.jev_picker_item());
+        if let Some(item) = self.jev_effort_picker_item() {
+            model_ids.insert(1, "jev-effort".to_string());
+            items.push(item);
+        }
         for preset in presets.into_iter() {
             let description =
                 (!preset.description.is_empty()).then_some(preset.description.to_string());
-            let is_current =
-                !self.jev_auto.enabled && preset.model.as_str() == self.current_model();
+            let is_current = !self.jev_auto.enabled
+                && !self.jev_effort_enabled()
+                && preset.model.as_str() == self.current_model();
             let direct_effort = match preset.supported_reasoning_efforts.as_slice() {
                 [] => Some(preset.default_reasoning_effort.clone()),
                 [option] => Some(option.effort.clone()),

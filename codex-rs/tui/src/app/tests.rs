@@ -45,6 +45,8 @@ mod fork_workspace_roots_tests;
 mod fresh_sparkle_tests;
 #[path = "tests/home_cleanup_tests.rs"]
 mod home_cleanup_tests;
+#[path = "tests/jev_effort_tests.rs"]
+mod jev_effort_tests;
 #[path = "tests/key_chords.rs"]
 mod key_chords;
 #[path = "tests/local_command_scroll_tests.rs"]

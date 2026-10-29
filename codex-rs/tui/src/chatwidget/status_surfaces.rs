@@ -734,6 +734,9 @@ impl ChatWidget {
             StatusLineItem::ModelWithReasoning => Some(self.model_with_reasoning_display_name()),
             StatusLineItem::Reasoning if self.jev_auto.awaiting_model_selection() => None,
             StatusLineItem::Reasoning => Some(self.reasoning_display_name()),
+            StatusLineItem::JevStats if !self.jev_auto.enabled && self.jev_effort_enabled() => {
+                Some("Jev effort per step".to_string())
+            }
             StatusLineItem::JevStats => Some(self.jev_auto.stats_display()),
             StatusLineItem::CurrentDir => {
                 Some(format_directory_display(

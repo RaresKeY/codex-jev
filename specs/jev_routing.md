@@ -58,6 +58,8 @@ normally uses high/xhigh; a known remedy can return to low. Max requires evidenc
 of exceptional reasoning depth and novelty together. `policy.json` owns the effort
 criteria used by the helper, eliminating a separate hardcoded set of descriptions.
 
+The separate [effort mode and weekly budget](jev_effort_budget.md) keeps a model fixed and routes effort between sampling steps. Both modes share the Jev token budget.
+
 ## Follow-up context
 
 `JevContext` in `jev_route.rs` retains up to three chronological visible requests
