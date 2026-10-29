@@ -37,6 +37,16 @@ pub(super) async fn spawn_review_thread(
     let model_info = review_model_info.clone();
     let mut selected = parent_turn_context.initial_settings.selected().clone();
     let mut reasoning_effort = selected.collaboration_mode.reasoning_effort();
+    if matches!(
+        reasoning_effort.as_ref(),
+        Some(ReasoningEffortConfig::Custom(value)) if value == "jev"
+    ) {
+        // Review delegates do not route with Jev. Inherit a concrete effort or the
+        // parent model's default, then apply the review model's normal compatibility rules.
+        reasoning_effort = parent_turn_context
+            .initial_settings
+            .effective_reasoning_effort();
+    }
 
     // Build per‑turn client with the requested model/family.
     let mut per_turn_config = (*parent_turn_context.config).clone();

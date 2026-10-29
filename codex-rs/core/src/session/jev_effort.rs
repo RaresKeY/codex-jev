@@ -2,9 +2,11 @@
 
 use super::session::Session;
 use super::step_context::StepContext;
+use crate::context_manager::is_user_turn_boundary;
 use codex_async_utils::OrCancelExt;
 use codex_protocol::error::CodexErr;
 use codex_protocol::error::Result as CodexResult;
+use codex_protocol::models::AgentMessageInputContent;
 use codex_protocol::models::ContentItem;
 use codex_protocol::models::FunctionCallOutputBody;
 use codex_protocol::models::FunctionCallOutputContentItem;
@@ -143,7 +145,9 @@ struct Transcript {
 
 fn request(history: &[ResponseItem], model: &str, efforts: &[ReasoningEffort]) -> Value {
     let latest_user = history.iter().rev().find_map(|item| match item {
-        ResponseItem::Message { role, content, .. } if role == "user" => {
+        ResponseItem::Message { role, content, .. }
+            if role == "user" && is_user_turn_boundary(item) =>
+        {
             let (text, _) = message_text(content, MAX_TASK_BYTES);
             let images = content
                 .iter()
@@ -168,6 +172,19 @@ fn request(history: &[ResponseItem], model: &str, efforts: &[ReasoningEffort]) -
                     .any(|part| matches!(part, ContentItem::InputImage { .. }));
                 let (text, truncated) = message_text(content, MAX_ENTRY_BYTES);
                 (role.as_str(), text, truncated)
+            }
+            ResponseItem::AgentMessage { content, .. } => {
+                omitted |= content
+                    .iter()
+                    .any(|part| matches!(part, AgentMessageInputContent::EncryptedContent { .. }));
+                let (text, truncated) = bounded_parts(
+                    content.iter().filter_map(|part| match part {
+                        AgentMessageInputContent::InputText { text } => Some(text.as_str()),
+                        AgentMessageInputContent::EncryptedContent { .. } => None,
+                    }),
+                    MAX_ENTRY_BYTES,
+                );
+                ("assistant", text, truncated)
             }
             ResponseItem::FunctionCall {
                 name, arguments, ..
