@@ -11,6 +11,7 @@ use codex_protocol::models::ContentItem;
 use codex_protocol::models::FunctionCallOutputBody;
 use codex_protocol::models::FunctionCallOutputContentItem;
 use codex_protocol::models::ResponseItem;
+use codex_protocol::openai_models::InputModality;
 use codex_protocol::openai_models::ReasoningEffort;
 use codex_protocol::protocol::SessionSource;
 use serde::Deserialize;
@@ -81,10 +82,12 @@ pub(super) async fn resolve(
             "The current model has no supported Jev effort levels.".to_string(),
         ));
     }
-    let history = session
-        .clone_history()
-        .await
-        .for_prompt(&model.input_modalities);
+    // Preserve attachment identity for Jev's image-capability check.
+    let history = session.clone_history().await.for_prompt(&[
+        InputModality::Text,
+        InputModality::Image,
+        InputModality::Audio,
+    ]);
     let payload = request(&history, &model.slug, &allowed_efforts);
     let helper = std::env::current_exe()
         .map_err(|_| CodexErr::Fatal("Cannot locate the Codex Jev installation.".to_string()))?
@@ -94,6 +97,7 @@ pub(super) async fn resolve(
         .await?
         .map_err(CodexErr::Fatal)?;
     Arc::make_mut(&mut Arc::make_mut(step).settings).jev_effort = Some(effort);
+    session.set_last_known_step_context(step).await;
     Ok(())
 }
 

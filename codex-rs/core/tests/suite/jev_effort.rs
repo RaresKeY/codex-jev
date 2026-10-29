@@ -5,6 +5,8 @@ use codex_core::TurnInput;
 use codex_core::TurnInputRequest;
 use codex_exec_server::CreateDirectoryOptions;
 use codex_features::Feature;
+use codex_protocol::models::ImageReference;
+use codex_protocol::openai_models::InputModality;
 use codex_protocol::openai_models::ReasoningEffort;
 use codex_protocol::openai_models::ReasoningEffortPreset;
 use codex_protocol::protocol::EventMsg;
@@ -23,6 +25,7 @@ use wiremock::ResponseTemplate;
 
 const SKILL_TASK: &str = "Use $jev-effort-skill to find the cause of the failing test.";
 const AGENT_EVIDENCE: &str = "The worker found an unresolved race.";
+const IMAGE_URL: &str = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC";
 
 const HELPER: &str = r#"import json, os, sys
 from pathlib import Path
@@ -31,6 +34,11 @@ with Path(__file__).with_name('requests.jsonl').open('a') as output:
     output.write(json.dumps(request) + '\n')
 if os.environ['CODEX_JEV_TEST_CASE'] == 'budget':
     print(json.dumps({'error': 'Jev weekly token budget exhausted.'}))
+    raise SystemExit(1)
+if os.environ['CODEX_JEV_TEST_CASE'] == 'image':
+    assert request['model'] == 'gpt-6-luna'
+    assert request['context']['images_attached'] is True
+    print(json.dumps({'error': 'Select an image-capable model before using Jev effort routing.'}))
     raise SystemExit(1)
 entries = request['context']['transcript']['entries']
 has_worker_evidence = any(item['role'] == 'assistant' and item['text'] == 'The worker found an unresolved race.' for item in entries)
@@ -43,6 +51,7 @@ print(json.dumps({'model': request['model'], 'effort': effort}))
 #[test_case("budget")]
 #[test_case("skill")]
 #[test_case("agent")]
+#[test_case("image")]
 fn jev_effort_backend(case: &str) -> anyhow::Result<()> {
     if case == "skill" {
         skip_if_wine_exec!(
@@ -122,15 +131,26 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
             )
             .await,
         ),
-        "budget" => None,
+        "budget" | "image" => None,
         _ => anyhow::bail!("unknown test case"),
     };
+    let selected_model = if case == "image" {
+        "gpt-6-luna"
+    } else {
+        "gpt-6.1-sol"
+    };
     let mut builder = test_codex()
-        .with_model_info_override("gpt-6.1-sol", |model| {
+        .with_model_info_override(selected_model, move |model| {
             model.use_responses_lite = true;
             model.supports_reasoning_effort_updates = true;
             model.default_reasoning_level = Some(ReasoningEffort::Low);
-            model.supported_reasoning_levels = [ReasoningEffort::Low, ReasoningEffort::High]
+            let higher_effort = if selected_model == "gpt-6-luna" {
+                model.input_modalities = vec![InputModality::Text];
+                ReasoningEffort::Medium
+            } else {
+                ReasoningEffort::High
+            };
+            model.supported_reasoning_levels = [ReasoningEffort::Low, higher_effort]
                 .into_iter()
                 .map(|effort| ReasoningEffortPreset {
                     effort,
@@ -138,8 +158,8 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
                 })
                 .collect();
         })
-        .with_config(|config| {
-            config.model = Some("gpt-6.1-sol".to_string());
+        .with_config(move |config| {
+            config.model = Some(selected_model.to_string());
             config.model_provider_id = "openai".to_string();
             config.model_provider.supports_websockets = false;
             config.model_reasoning_effort = Some(ReasoningEffort::Custom("jev".to_string()));
@@ -171,18 +191,32 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
         });
     }
     let test = builder.build_with_auto_env(&server).await?;
-    if case == "budget" {
+    if matches!(case.as_str(), "budget" | "image") {
+        let mut input = vec![UserInput::Text {
+            text: "Complete the current task.".to_string(),
+            text_elements: Vec::new(),
+        }];
+        if case == "image" {
+            input.push(UserInput::Image {
+                image: ImageReference::Inline {
+                    image_url: IMAGE_URL.to_string(),
+                },
+                detail: None,
+            });
+        }
         test.codex
-            .start_or_steer_turn(TurnInputRequest::user_input(vec![UserInput::Text {
-                text: "Complete the current task.".to_string(),
-                text_elements: Vec::new(),
-            }]))
+            .start_or_steer_turn(TurnInputRequest::user_input(input))
             .await?;
         let event = wait_for_event(&test.codex, |event| matches!(event, EventMsg::Error(_))).await;
         let EventMsg::Error(error) = event else {
             unreachable!()
         };
-        assert!(error.message.contains("Jev weekly token budget exhausted."));
+        let expected_error = if case == "image" {
+            "Select an image-capable model before using Jev effort routing."
+        } else {
+            "Jev weekly token budget exhausted."
+        };
+        assert!(error.message.contains(expected_error));
         wait_for_event(&test.codex, |event| {
             matches!(event, EventMsg::TurnComplete(_))
         })
@@ -236,7 +270,7 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
         .lines()
         .map(serde_json::from_str)
         .collect::<Result<_, _>>()?;
-    if case == "budget" {
+    if matches!(case.as_str(), "budget" | "image") {
         let executor_requests = server
             .received_requests()
             .await
@@ -247,6 +281,13 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
             })
             .count();
         assert_eq!((decisions.len(), executor_requests), (1, 0));
+        if case == "image" {
+            assert_eq!(decisions[0]["context"]["images_attached"], true);
+            let payload = serde_json::to_string(&decisions[0])?;
+            assert!(!payload.contains(IMAGE_URL));
+            assert!(!payload.contains("image_url"));
+            assert!(!payload.contains("data:image/"));
+        }
         return Ok(());
     }
     let requests = captured.expect("responses mock").requests();
