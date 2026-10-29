@@ -255,6 +255,7 @@ pub(crate) mod extension_metrics;
 mod guardian_checkpoint;
 mod handlers;
 mod inject;
+mod jev_effort;
 mod reasoning_effort;
 mod submission;
 pub(crate) use reasoning_effort::RequestEffortUsage;
@@ -2274,6 +2275,7 @@ impl Session {
             if let Some(effort) = config
                 .model_reasoning_effort
                 .clone()
+                .filter(|effort| !matches!(effort, ReasoningEffortConfig::Custom(value) if value == "jev"))
                 .or_else(|| model.default_reasoning_level.clone())
             {
                 // Without overrides, the parent's selected effort is its request baseline.
@@ -4175,7 +4177,7 @@ impl Session {
             token_budget,
             session_telemetry,
             turn: turn_context,
-            extension_data,
+            extension_data: Arc::new(extension_data),
             environments,
             inherited_environments,
             executor_hook_sources,

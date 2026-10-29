@@ -2,6 +2,10 @@
 
 import io
 import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -51,7 +55,17 @@ def context():
     }
 
 
-class InputBoundaryTests(unittest.TestCase):
+class IsolatedBudgetTestCase(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.budget = route.Budget(Path(directory.name) / "budget.sqlite3")
+        budget_patch = patch.object(route, "Budget", return_value=self.budget)
+        budget_patch.start()
+        self.addCleanup(budget_patch.stop)
+
+
+class InputBoundaryTests(IsolatedBudgetTestCase):
     def test_escaped_prompt_is_read_completely(self):
         task = '"' * 18_000
         request = json.dumps({"task": task}).encode()
@@ -104,7 +118,7 @@ class InputBoundaryTests(unittest.TestCase):
         opener.assert_not_called()
 
 
-class RoutingContextTests(unittest.TestCase):
+class RoutingContextTests(IsolatedBudgetTestCase):
     def test_effort_policy_drives_provider_choices(self):
         policy = json.loads(route.POLICY_PATH.read_text())
         policy["efforts"]["max"] = "Updated exceptional-depth criterion"
@@ -364,6 +378,125 @@ class RoutingContextTests(unittest.TestCase):
             (parsed["model"], parsed["effort"], parsed["reviewNeeded"]),
             ("gpt-6-luna", "high", True),
         )
+
+
+class EffortAndBudgetTests(IsolatedBudgetTestCase):
+    def invoke(self, request, response=None, transport_error=None):
+        output = io.StringIO()
+        with (
+            patch.object(route.sys, "stdin", SimpleNamespace(buffer=io.BytesIO(json.dumps(request).encode()))),
+            patch.object(route.sys, "stdout", output),
+            patch.object(route, "read_key", return_value="offline-test-key"),
+            patch.object(route.urllib.request, "build_opener") as opener,
+        ):
+            opener.return_value.open.side_effect = transport_error
+            opener.return_value.open.return_value.__enter__.return_value.read.return_value = json.dumps(response).encode()
+            try:
+                route.main()
+                exit_code = 0
+            except SystemExit as error:
+                exit_code = error.code
+        return exit_code, json.loads(output.getvalue()), opener
+
+    def test_effort_only_uses_next_step_evidence_without_model_question(self):
+        evidence = {**context(), "source": "core_step_history", "images_attached": False}
+        evidence["transcript"] = {
+            "source": "core_step_history", "availability": "available", "omitted": False,
+            "entries": [{"role": "tool_output", "text": "Cause confirmed; apply documented fix", "truncated": False}],
+        }
+        payload = route.routing_request("Investigate failure", evidence, mode="effort_only",
+                                        model="gpt-6-astra", allowed_efforts=["low", "high"])
+        self.assertEqual(set(payload["questions"]), {"reasoning_effort"})
+        self.assertEqual(payload["state"]["context"], evidence)
+        self.assertEqual(payload["state"]["execution_model"], "gpt-6-astra")
+        self.assertFalse(set(payload["state"]["routing_policy"]) & {"models", "model", "images", "anchors"})
+        self.assertIn("NEXT executor model call", payload["questions"]["reasoning_effort"]["instructions"])
+
+    def test_effort_only_preserves_model_and_reports_only_effort_confidence(self):
+        response = decision("gpt-6-astra", "low")
+        del response["answers"]["execution_model"]
+        response["answers"]["reasoning_effort"]["probabilities"] = {"low": 1, "high": 0}
+        code, result, opener = self.invoke({
+            "task": "Apply established fix", "mode": "effort_only", "model": "gpt-6-astra",
+            "allowed_efforts": ["low", "high"],
+        }, response)
+        self.assertEqual((code, result), (0, {
+            "model": "gpt-6-astra", "effort": "low",
+            "stats": {"effort_confidence": 1, "input_tokens": 1, "output_tokens": 1},
+        }))
+        self.assertEqual(self.budget.snapshot()["used_tokens"], 2)
+        self.assertEqual(set(json.loads(opener.return_value.open.call_args.args[0].data)["questions"]),
+                         {"reasoning_effort"})
+
+    def test_invalid_effort_choices_and_luna_images_fail_before_transport(self):
+        for model, efforts, evidence in (
+            ("unknown-model", ["low"], None),
+            ("gpt-6-astra", ["low", "low"], None),
+            ("gpt-6-astra", [], None),
+            ("gpt-6-astra", [True], None),
+            ("gpt-6-luna", ["high"], None),
+            ("gpt-6-luna", ["low"], context()),
+        ):
+            with self.subTest(model=model, efforts=efforts):
+                code, result, opener = self.invoke({"task": "go", "mode": "effort_only",
+                    "model": model, "allowed_efforts": efforts, "context": evidence})
+                self.assertEqual(code, 1)
+                self.assertIn("error", result)
+                opener.assert_not_called()
+
+    def test_effort_parser_rejects_unrequested_choices_or_model_answer(self):
+        raw = decision("gpt-6-astra", "low")
+        with self.assertRaises(route.RoutingError):
+            route.parse_route(raw, fixed_model="gpt-6-astra", effort_choices={"low", "high"})
+        del raw["answers"]["execution_model"]
+        with self.assertRaises(route.RoutingError):
+            route.parse_route(raw, fixed_model="gpt-6-astra", effort_choices={"low", "high"})
+
+    def test_exhausted_budget_never_contacts_provider(self):
+        self.budget.configure("set", 0)
+        code, result, opener = self.invoke({"task": "go"}, decision())
+        self.assertEqual(code, 1)
+        self.assertIn("weekly token budget", result["error"])
+        opener.assert_not_called()
+
+    def test_invalid_decision_still_accounts_reported_tokens(self):
+        raw = decision()
+        raw["answers"] = {}
+        code, _, _ = self.invoke({"task": "go"}, raw)
+        self.assertEqual(code, 1)
+        state = self.budget.snapshot()
+        self.assertEqual((state["used_tokens"], state["reserved_tokens"], state["unreported_tokens"]), (2, 0, 0))
+
+    def test_transport_failure_keeps_conservative_charge_without_leaking_error(self):
+        code, result, _ = self.invoke({"task": "go"}, transport_error=TimeoutError("SECRET"))
+        self.assertEqual(code, 1)
+        self.assertNotIn("SECRET", result["error"])
+        state = self.budget.snapshot()
+        self.assertGreater(state["unreported_tokens"], 0)
+        self.assertEqual(state["reserved_tokens"], 0)
+
+    def test_failure_wording_distinguishes_next_step_from_unsent_user_turn(self):
+        invalid = {**decision(), "answers": {}}
+        for mode, expected in (
+            ("auto", "Your message was not sent"),
+            ("effort_only", "The next model step was not started"),
+        ):
+            request = {"task": "continue", "mode": mode}
+            if mode == "effort_only":
+                request.update(model="gpt-6-astra", allowed_efforts=["low", "high"])
+            for transport_error in (None, TimeoutError("private upstream detail")):
+                with self.subTest(mode=mode, transport_error=transport_error):
+                    code, result, _ = self.invoke(request, invalid, transport_error)
+                    self.assertEqual(code, 1)
+                    self.assertIn(expected, result["error"])
+                    self.assertNotIn("private upstream detail", result["error"])
+
+    def test_isolated_python_loads_bundled_budget_without_pythonpath(self):
+        result = subprocess.run([sys.executable, "-I", str(Path(route.__file__))], input="{}",
+                                text=True, capture_output=True, timeout=5)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("error", json.loads(result.stdout))
+        self.assertEqual(result.stderr, "")
 
 
 if __name__ == "__main__":

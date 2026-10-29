@@ -505,7 +505,7 @@ pub(crate) async fn run_turn(
         .await;
 
         // Capture once so context, advertised tools, and tool calls share one request view.
-        let step_context = match next_step_context.take() {
+        let mut step_context = match next_step_context.take() {
             Some(step_context) if pending_input.is_empty() => step_context,
             None if pending_input.is_empty() => {
                 sess.capture_step_context_with_required_mcp_servers(
@@ -543,6 +543,7 @@ pub(crate) async fn run_turn(
             }
         };
         let sampling_request_result: CodexResult<_> = async {
+            super::jev_effort::resolve(&sess, &mut step_context, &cancellation_token).await?;
             super::time_reminder::maybe_record_current_time_reminder(
                 sess.as_ref(),
                 turn_context.as_ref(),

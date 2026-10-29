@@ -188,7 +188,9 @@ impl ChatWidget {
                 self.update_collaboration_mode_indicator();
             }
         }
-        if self.config.model_provider_id != codex_model_provider_info::OPENAI_PROVIDER_ID
+        if self.jev_effort_enabled() {
+            self.apply_jev_effort();
+        } else if self.config.model_provider_id != codex_model_provider_info::OPENAI_PROVIDER_ID
             || self.current_model() == crate::model_catalog::LUNA_RESERVE_MODEL
         {
             self.disable_jev_auto();

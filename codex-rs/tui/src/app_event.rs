@@ -300,6 +300,10 @@ pub(crate) enum AppEvent {
         email: Option<String>,
     },
     EnableJevAuto,
+    EnableJevEffort {
+        thread_id: Option<ThreadId>,
+        model: String,
+    },
     JevContextRequested {
         id: uuid::Uuid,
         thread_id: Option<ThreadId>,

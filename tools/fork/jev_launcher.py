@@ -64,6 +64,11 @@ def interactive_command(args):
 def main():
     release = Path(__file__).resolve().parent
     args = sys.argv[1:]
+    if args[:1] == ["budget"]:
+        os.execv(
+            sys.executable,
+            [sys.executable, "-I", str(release / "jev_budget.py"), *args[1:]],
+        )
     if args[:1] == ["update"]:
         return update_command(release, args[1:])
     interactive = interactive_command(args)

@@ -167,6 +167,7 @@ impl ChatWidget {
     /// so the footer reflects it without waiting for the next mode switch.
     /// Passing `None` resets to the Plan-mode preset default.
     pub(crate) fn set_plan_mode_reasoning_effort(&mut self, effort: Option<ReasoningEffortConfig>) {
+        self.clear_jev_effort(effort.clone());
         self.config.plan_mode_reasoning_effort = effort.clone();
         if self.collaboration_modes_enabled()
             && let Some(mask) = self.active_collaboration_mask.as_mut()
@@ -185,9 +186,9 @@ impl ChatWidget {
 
     /// Set the reasoning effort for the non-Plan collaboration mode.
     ///
-    /// Does not touch the active Plan mask — Plan reasoning is controlled
-    /// exclusively by the Plan preset and `set_plan_mode_reasoning_effort`.
+    /// Keeps ordinary Plan overrides; a manual effort exits Jev in both modes.
     pub(crate) fn set_reasoning_effort(&mut self, effort: Option<ReasoningEffortConfig>) {
+        self.clear_jev_effort(effort.clone());
         self.current_collaboration_mode = self.current_collaboration_mode.with_updates(
             /*model*/ None,
             Some(effort.clone()),

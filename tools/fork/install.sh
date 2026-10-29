@@ -12,11 +12,13 @@ if [[ -n "${CODEX_JEV_DIST:-}" ]]; then
   runtime="$source_bin"
   revision=$(< "$source_bin/VERSION")
   helper="$source_bin/jev-route.py"
+  budget="$source_bin/jev_budget.py"
   policy="$source_bin/policy.json"
   notices="$source_bin"
 else
   revision=$(git -C "$root" rev-parse --short=12 HEAD)
   helper="$root/jev/route.py"
+  budget="$root/jev/jev_budget.py"
   policy="$root/jev/policy.json"
   notices="$root"
 fi
@@ -24,7 +26,7 @@ fi
 for binary in codex codex-code-mode-host; do
   [[ -x "$source_bin/$binary" ]] || { printf 'Build %s first with tools/fork/build.sh\n' "$binary" >&2; exit 1; }
 done
-for input in "$helper" "$policy" "$notices/LICENSE" "$notices/NOTICE"; do
+for input in "$helper" "$budget" "$policy" "$notices/LICENSE" "$notices/NOTICE"; do
   [[ -r "$input" && -f "$input" ]] || { printf 'Missing install input: %s\n' "$input" >&2; exit 1; }
 done
 for input in jev_launcher.py jev_session.py jev_update.py; do
@@ -83,6 +85,7 @@ chmod 755 "$install_root"
 install -m 755 "$source_bin/codex" "$install_root/codex-jev-native"
 install -m 755 "$source_bin/codex-code-mode-host" "$install_root/codex-code-mode-host"
 install -m 644 "$helper" "$install_root/jev-route.py"
+install -m 644 "$budget" "$install_root/jev_budget.py"
 install -m 644 "$policy" "$install_root/policy.json"
 install -m 644 "$notices/LICENSE" "$notices/NOTICE" "$install_root/"
 install -m 644 "$runtime/jev_launcher.py" "$runtime/jev_session.py" "$runtime/jev_update.py" "$install_root/"

@@ -1074,8 +1074,11 @@ impl App {
             AppEvent::FatalExitRequest(message) => {
                 return Ok(AppRunControl::Exit(ExitReason::Fatal(message)));
             }
+            AppEvent::EnableJevEffort { thread_id, model } => {
+                self.enable_jev_effort(app_server, thread_id, model).await;
+            }
             AppEvent::EnableJevAuto => {
-                self.chat_widget.enable_jev_auto();
+                self.enable_jev_auto(app_server).await;
             }
             AppEvent::JevContextRequested { id, thread_id, reply } => {
                 if self.chat_widget.thread_id() == thread_id && self.chat_widget.jev_route_is_current(id) {

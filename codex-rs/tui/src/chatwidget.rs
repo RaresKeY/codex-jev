@@ -289,6 +289,7 @@ mod input_restore;
 mod input_submission;
 mod interrupts;
 mod jev_auto;
+mod jev_effort;
 mod jev_status;
 mod questions;
 mod startup_submission;
