@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# package.sh fills this literal without adding an archive member for older updaters.
+packaged_budget=
 if [[ $# != 0 && ( $# != 2 || ${1:-} != --key-file ) ]]; then
   printf 'Usage: %s [--key-file /path/to/external.env]\n' "$0" >&2
   exit 1
@@ -26,9 +28,12 @@ fi
 for binary in codex codex-code-mode-host; do
   [[ -x "$source_bin/$binary" ]] || { printf 'Build %s first with tools/fork/build.sh\n' "$binary" >&2; exit 1; }
 done
-for input in "$helper" "$budget" "$policy" "$notices/LICENSE" "$notices/NOTICE"; do
+for input in "$helper" "$policy" "$notices/LICENSE" "$notices/NOTICE"; do
   [[ -r "$input" && -f "$input" ]] || { printf 'Missing install input: %s\n' "$input" >&2; exit 1; }
 done
+if [[ -z "$packaged_budget" ]]; then
+  [[ -r "$budget" && -f "$budget" ]] || { printf 'Missing install input: %s\n' "$budget" >&2; exit 1; }
+fi
 for input in jev_launcher.py jev_session.py jev_update.py; do
   [[ -f "$runtime/$input" ]] || { printf 'Missing launcher input: %s\n' "$input" >&2; exit 1; }
 done
@@ -85,7 +90,12 @@ chmod 755 "$install_root"
 install -m 755 "$source_bin/codex" "$install_root/codex-jev-native"
 install -m 755 "$source_bin/codex-code-mode-host" "$install_root/codex-code-mode-host"
 install -m 644 "$helper" "$install_root/jev-route.py"
-install -m 644 "$budget" "$install_root/jev_budget.py"
+if [[ -n "$packaged_budget" ]]; then
+  printf '%s' "$packaged_budget" > "$install_root/jev_budget.py"
+  chmod 644 "$install_root/jev_budget.py"
+else
+  install -m 644 "$budget" "$install_root/jev_budget.py"
+fi
 install -m 644 "$policy" "$install_root/policy.json"
 install -m 644 "$notices/LICENSE" "$notices/NOTICE" "$install_root/"
 install -m 644 "$runtime/jev_launcher.py" "$runtime/jev_session.py" "$runtime/jev_update.py" "$install_root/"

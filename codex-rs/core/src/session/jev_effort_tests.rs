@@ -13,7 +13,12 @@ fn jev_effort_keeps_latest_image_only_request_after_many_tools() {
         "content": [{"type": "input_image", "image_url": "private-image"}],
     }))
     .expect("image-only message");
-    let mut history = vec![old, image];
+    let skill = serde_json::from_value(json!({
+        "type": "message", "role": "user",
+        "content": [{"type": "input_text", "text": "<skill>Inspect the supplied image.</skill>"}],
+    }))
+    .expect("injected skill");
+    let mut history = vec![old, image, skill];
     for index in 0..40 {
         history.push(serde_json::from_value(json!({
             "type": "function_call_output", "call_id": format!("call-{index}"), "output": "done",
@@ -32,6 +37,86 @@ fn jev_effort_keeps_latest_image_only_request_after_many_tools() {
 }
 
 #[test]
+fn jev_effort_keeps_real_user_task_after_context_and_many_tools() {
+    for context in [
+        "<skill>Follow the repository debugging workflow.</skill>".to_string(),
+        format!(
+            "{}\nSynthetic context summary.",
+            crate::compact::SUMMARY_PREFIX
+        ),
+    ] {
+        let mut history = ["An older request.", "Find the cause of the failing test."]
+            .into_iter()
+            .chain(std::iter::once(context.as_str()))
+            .map(|text| {
+                serde_json::from_value(json!({
+                    "type": "message", "role": "user",
+                    "content": [{"type": "input_text", "text": text}],
+                }))
+                .expect("user-role message")
+            })
+            .collect::<Vec<_>>();
+        for index in 0..40 {
+            history.push(serde_json::from_value(json!({
+                "type": "function_call_output", "call_id": format!("call-{index}"), "output": "done",
+            })).expect("tool output"));
+        }
+
+        let payload = request(&history, "gpt-6.1-sol", &[ReasoningEffort::Low]);
+        assert_eq!(payload["task"], "Find the cause of the failing test.");
+        let transcript = &payload["context"]["transcript"];
+        assert_eq!(transcript["omitted"], true);
+        assert!(
+            transcript["entries"]
+                .as_array()
+                .expect("entries")
+                .iter()
+                .all(|entry| entry["role"] == "tool_output")
+        );
+    }
+}
+
+#[test]
+fn jev_effort_keeps_plaintext_agent_evidence_and_omits_encrypted_content() {
+    let history = vec![
+        serde_json::from_value(json!({
+            "type": "message", "role": "user",
+            "content": [{"type": "input_text", "text": "Investigate the failure."}],
+        })).expect("user message"),
+        serde_json::from_value(json!({
+            "type": "agent_message", "author": "/root/worker", "recipient": "/root",
+            "content": [
+                {"type": "input_text", "text": "The trace identifies the cause."},
+                {"type": "encrypted_content", "encrypted_content": "private-agent-evidence"},
+                {"type": "input_text", "text": "Re-run the focused check."},
+            ],
+        })).expect("mixed agent message"),
+        serde_json::from_value(json!({
+            "type": "agent_message", "author": "/root/worker", "recipient": "/root",
+            "content": [{"type": "encrypted_content", "encrypted_content": "private-agent-evidence"}],
+        })).expect("encrypted agent message"),
+    ];
+
+    let payload = request(&history, "gpt-6.1-sol", &[ReasoningEffort::Low]);
+    assert_eq!(payload["task"], "Investigate the failure.");
+    assert_eq!(
+        payload["context"]["transcript"],
+        json!({
+            "source": "core_step_history", "availability": "available", "omitted": true,
+            "entries": [
+                {"role": "user", "text": "Investigate the failure.", "truncated": false},
+                {"role": "assistant", "text": "The trace identifies the cause.\nRe-run the focused check.", "truncated": false},
+            ],
+        })
+    );
+    assert!(
+        !serde_json::to_string(&payload)
+            .expect("payload")
+            .contains("private-agent-evidence")
+    );
+}
+
+#[test]
 fn jev_effort_bounds_recent_evidence_and_omits_reasoning_and_media() {
     let mut history = vec![
         serde_json::from_value(json!({
@@ -43,13 +128,19 @@ fn jev_effort_bounds_recent_evidence_and_omits_reasoning_and_media() {
         .expect("user message"),
     ];
     for index in 0..40 {
-        history.push(
-            serde_json::from_value(json!({
+        let text = format!("{}\nfinal error {index}", "é".repeat(10_000));
+        let item = if index % 2 == 0 {
+            json!({
                 "type": "function_call_output", "call_id": format!("call-{index}"),
-                "output": format!("{}\nfinal error {index}", "é".repeat(10_000)),
-            }))
-            .expect("tool output"),
-        );
+                "output": text,
+            })
+        } else {
+            json!({
+                "type": "agent_message", "author": "/root/worker", "recipient": "/root",
+                "content": [{"type": "input_text", "text": text}],
+            })
+        };
+        history.push(serde_json::from_value(item).expect("tool or agent evidence"));
     }
     history.push(
         serde_json::from_value(json!({

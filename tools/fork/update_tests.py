@@ -5,12 +5,24 @@ import io
 import json
 import os
 from pathlib import Path
+import shutil
+import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
 
 import jev_update as update
+
+
+# Archive contract used by the updater before weekly budgets were introduced.
+PRE_BUDGET_PAYLOAD = {
+    "codex", "codex-code-mode-host", "jev-route.py", "policy.json", "LICENSE",
+    "NOTICE", "install.sh", "install-source.sh", "VERSION", "RELEASE.json",
+    "jev_launcher.py", "jev_session.py", "jev_update.py", "verify_trust.py",
+    "incident-policy.json",
+}
 
 
 class UpdateTests(unittest.TestCase):
@@ -127,6 +139,86 @@ class UpdateTests(unittest.TestCase):
             install.assert_called_once()
             self.assertEqual(install.call_args.args[0][0], "bash")
             self.assertTrue(install.call_args.args[0][1].endswith("/install.sh"))
+
+    def test_package_updates_through_previous_payload_contract_with_working_budget(self):
+        source = Path(__file__).resolve().parents[2]
+        checkout = self.root / "checkout"
+        files = [
+            "tools/fork/package.sh", "tools/fork/install.sh",
+            "tools/fork/jev_launcher.py", "tools/fork/jev_session.py",
+            "tools/fork/jev_update.py", "tools/fork/ca-trust/verify_trust.py",
+            "tools/fork/ca-trust/incident-policy.json", "jev/route.py",
+            "jev/jev_budget.py", "jev/policy.json",
+        ]
+        for name in files:
+            target = checkout / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source / name, target)
+        for name in ("LICENSE", "NOTICE"):
+            (checkout / name).write_text("offline fixture\n")
+        (checkout / "codex-rs").mkdir()
+        (checkout / "codex-rs/Cargo.toml").write_text(
+            '[workspace.package]\nversion = "0.165.0-jev.2"\n'
+        )
+        binaries = checkout / ".build/target/release"
+        binaries.mkdir(parents=True)
+        for name in ("codex", "codex-code-mode-host"):
+            binary = binaries / name
+            binary.write_text("#!/bin/sh\nprintf 'codex-cli 0.165.0-jev.2\\n'\n")
+            binary.chmod(0o755)
+        fake_bin = self.root / "fake-bin"
+        fake_bin.mkdir()
+        git = fake_bin / "git"
+        git.write_text("#!/bin/sh\nprintf 'b997e49f41e4\\n'\n")
+        git.chmod(0o755)
+        home = self.root / "home"
+        environment = {
+            **os.environ,
+            "HOME": str(home),
+            "XDG_DATA_HOME": str(home / "data"),
+            "XDG_CONFIG_HOME": str(home / "config"),
+            "CODEX_JEV_BUDGET_FILE": str(home / "budget.sqlite3"),
+            "CODEX_JEV_BUILD_PROFILE": "release",
+            "PATH": str(fake_bin) + os.pathsep + os.environ["PATH"],
+        }
+        # Repackaging a prior candidate must also remove its separate budget member.
+        package = checkout / ".build/release/codex-jev-linux-x86_64"
+        package.mkdir(parents=True)
+        (package / "jev_budget.py").write_text("stale candidate module\n")
+        packaged = subprocess.run(
+            ["bash", str(checkout / "tools/fork/package.sh")], env=environment,
+            capture_output=True, text=True, timeout=15,
+        )
+        self.assertEqual(packaged.returncode, 0, packaged.stderr)
+        release = checkout / ".build/release"
+        downloads = [(release / "SHA256SUMS").read_bytes(),
+                     (release / update.ARCHIVE).read_bytes()]
+        # Neither extraction nor installation may need access to the source checkout.
+        shutil.rmtree(checkout)
+        with (
+            patch.object(update, "PAYLOAD", PRE_BUDGET_PAYLOAD),
+            patch.object(update, "fetch", side_effect=downloads),
+            patch.dict(os.environ, environment),
+        ):
+            update.install_release(update.select_release([self.selected]))
+        installed = home / "data/codex-jev/current"
+        self.assertEqual((installed / "jev_budget.py").read_bytes(),
+                         (source / "jev/jev_budget.py").read_bytes())
+        status = subprocess.run(
+            [str(home / ".local/bin/codex-jev"), "budget", "status", "--json"],
+            env=environment, capture_output=True, text=True, timeout=10,
+        )
+        self.assertEqual(status.returncode, 0, status.stderr)
+        state = json.loads(status.stdout)
+        self.assertEqual((state["enabled"], state["limit_tokens"], state["used_tokens"]),
+                         (True, 10_000_000, 0))
+        helper = subprocess.run(
+            [sys.executable, "-I", str(installed / "jev-route.py")], input="{}",
+            env=environment, capture_output=True, text=True, timeout=10,
+        )
+        self.assertEqual(helper.returncode, 1)
+        self.assertIn("error", json.loads(helper.stdout))
+        self.assertEqual(helper.stderr, "")
 
     def test_native_version_mismatch_never_installs(self):
         with (

@@ -50,6 +50,14 @@ final `current` switch fails; failed candidates and temporary files are removed.
 Canonical key paths are read with a NUL delimiter so trailing newlines, including
 those in symlink targets, are preserved and rejected before publication.
 
+Release archives retain the file set accepted by the existing fork updater.
+`package.sh` embeds `jev/jev_budget.py` as a quoted literal in the existing
+`install-source.sh` member. The installer writes it to the staged release as
+`jev_budget.py`, beside the route helper, before publication. Source and curated
+distribution installs still accept the separate module. This keeps isolated
+Python helper imports unchanged and does not require writing into an extracted
+release directory.
+
 `upstream-update.sh` fetches and merges one explicitly specified upstream tag;
 it requires clean state and preserves conflicts for resolution. Reconcile the
 fork version, local workspace lock versions, disabled workflow locations, helper

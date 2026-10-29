@@ -72,6 +72,14 @@ class InstallTransactionTests(unittest.TestCase):
                 self.assertFalse((self.data / "current").exists())
                 self.assertFalse((self.config / "key-file").exists())
 
+    def test_missing_unbundled_budget_is_rejected_without_publication(self):
+        (self.dist / "jev_budget.py").unlink()
+        rejected = self.install()
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("Missing install input", rejected.stderr)
+        self.assertIn("jev_budget.py", rejected.stderr)
+        self.assertFalse((self.data / "current").exists())
+
     def test_failed_release_switch_restores_launcher_key_and_previous_release(self):
         old_key = self.root / "old-key.env"
         new_key = self.root / "new-key.env"

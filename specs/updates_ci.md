@@ -37,6 +37,17 @@ for the platform and release profile, and checks the binary's actual version.
 Only then does it invoke the transactional installer. Failed updates preserve
 the current installation. No local Rust build is part of updating.
 
+The archive member set remains compatible with the original fork updater's
+strict allowlist. The weekly budget module is embedded in `install-source.sh`
+and created as an installed sibling during staging; it is not an additional
+archive member. Offline coverage packages fake binaries, applies the previous
+updater's member contract, runs the real installer in a temporary home, and
+checks the installed budget command and isolated helper import.
+
+An installed source snapshot whose updater requires a separate `jev_budget.py`
+archive member needs one manual reinstall using the packaged `install.sh`.
+That intermediate member set cannot be accepted by the original updater.
+
 Publishing a new update still requires a reviewed release with a unique fork
 version and optimized artifacts. CI candidate artifacts alone do not enter the
 update feed. Existing installations acquire the launcher once through the

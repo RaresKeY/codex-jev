@@ -203,6 +203,8 @@ mod resume;
 mod resume_warning;
 mod retry_after;
 mod review;
+#[path = "review_jev_effort_tests.rs"]
+mod review_jev_effort;
 mod rmcp_client;
 mod rollout_budget;
 mod rollout_compression;

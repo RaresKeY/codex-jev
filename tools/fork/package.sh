@@ -9,7 +9,8 @@ source_bin="$root/.build/target/$profile"
 mkdir -p "$package"
 install -m 755 "$source_bin/codex" "$source_bin/codex-code-mode-host" "$package/"
 install -m 644 "$root/jev/route.py" "$package/jev-route.py"
-install -m 644 "$root/jev/jev_budget.py" "$package/jev_budget.py"
+# Remove the separate module left by an earlier candidate; old updaters reject it.
+rm -f -- "$package/jev_budget.py"
 install -m 644 "$root/jev/policy.json" "$package/policy.json"
 install -m 644 "$root/LICENSE" "$root/NOTICE" "$package/"
 install -m 755 "$root/tools/fork/install.sh" "$package/install-source.sh"
@@ -19,6 +20,7 @@ git -C "$root" rev-parse --short=12 HEAD > "$package/VERSION"
 python3 - "$root" "$package" "$profile" <<'METADATA'
 import json
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import tomllib
@@ -28,6 +30,14 @@ actual = subprocess.check_output([str(package / "codex"), "--version"], text=Tru
 if actual != "codex-cli " + version:
     raise SystemExit("Built binary does not match the checkout version")
 (package / "RELEASE.json").write_text(json.dumps({"version": version, "revision": (package / "VERSION").read_text().strip(), "profile": sys.argv[3], "target": "linux-x86_64"}) + "\n")
+# Keep the original archive contract while installing the budget as a real sibling.
+installer = package / "install-source.sh"
+template = installer.read_text()
+marker = "packaged_budget=\n"
+if template.count(marker) != 1:
+    raise SystemExit("Budget embedding marker is missing or ambiguous")
+budget = (root / "jev/jev_budget.py").read_bytes().decode("utf-8")
+installer.write_text(template.replace(marker, "packaged_budget=" + shlex.quote(budget) + "\n", 1))
 METADATA
 cat > "$package/install.sh" <<'INSTALL'
 #!/usr/bin/env bash

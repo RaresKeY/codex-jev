@@ -1,12 +1,17 @@
 //! Private subprocesses keep the bundled-helper boundary realistic without shared test state.
 
+use codex_core::StartIfIdleSubmission;
+use codex_core::TurnInput;
 use codex_core::TurnInputRequest;
+use codex_exec_server::CreateDirectoryOptions;
 use codex_features::Feature;
 use codex_protocol::openai_models::ReasoningEffort;
 use codex_protocol::openai_models::ReasoningEffortPreset;
 use codex_protocol::protocol::EventMsg;
 use codex_protocol::user_input::UserInput;
+use codex_utils_path_uri::PathUri;
 use core_test_support::responses;
+use core_test_support::skip_if_wine_exec;
 use core_test_support::test_codex::test_codex;
 use core_test_support::wait_for_event;
 use pretty_assertions::assert_eq;
@@ -15,6 +20,9 @@ use serde_json::json;
 use std::time::Duration;
 use test_case::test_case;
 use wiremock::ResponseTemplate;
+
+const SKILL_TASK: &str = "Use $jev-effort-skill to find the cause of the failing test.";
+const AGENT_EVIDENCE: &str = "The worker found an unresolved race.";
 
 const HELPER: &str = r#"import json, os, sys
 from pathlib import Path
@@ -25,14 +33,23 @@ if os.environ['CODEX_JEV_TEST_CASE'] == 'budget':
     print(json.dumps({'error': 'Jev weekly token budget exhausted.'}))
     raise SystemExit(1)
 entries = request['context']['transcript']['entries']
-effort = 'high' if any(item['role'] == 'tool_output' for item in entries) else 'low'
+has_worker_evidence = any(item['role'] == 'assistant' and item['text'] == 'The worker found an unresolved race.' for item in entries)
+effort = 'high' if has_worker_evidence or any(item['role'] == 'tool_output' for item in entries) else 'low'
 print(json.dumps({'model': request['model'], 'effort': effort}))
 "#;
 
 #[test_case("steps")]
 #[test_case("retry")]
 #[test_case("budget")]
+#[test_case("skill")]
+#[test_case("agent")]
 fn jev_effort_backend(case: &str) -> anyhow::Result<()> {
+    if case == "skill" {
+        skip_if_wine_exec!(
+            Ok(()),
+            "skill paths require matching host and executor path conventions"
+        );
+    }
     let temp = tempfile::tempdir()?;
     let executable = temp
         .path()
@@ -78,7 +95,7 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
         responses::ev_completed("done"),
     ]);
     let captured = match case.as_str() {
-        "steps" => Some(
+        "steps" | "skill" => Some(
             responses::mount_sse_sequence(
                 &server,
                 vec![
@@ -91,6 +108,7 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
             )
             .await,
         ),
+        "agent" => Some(responses::mount_sse_once(&server, completion).await),
         "retry" => Some(
             responses::mount_response_sequence(
                 &server,
@@ -107,7 +125,7 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
         "budget" => None,
         _ => anyhow::bail!("unknown test case"),
     };
-    let test = test_codex()
+    let mut builder = test_codex()
         .with_model_info_override("gpt-6.1-sol", |model| {
             model.use_responses_lite = true;
             model.supports_reasoning_effort_updates = true;
@@ -129,9 +147,30 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
                 .features
                 .enable(Feature::ReasoningEffortOverride)
                 .expect("enable effort updates");
-        })
-        .build_with_auto_env(&server)
-        .await?;
+        });
+    if case == "skill" {
+        builder = builder.with_workspace_setup(|cwd, fs| async move {
+            let directory = cwd.join(".agents/skills/jev-effort-skill");
+            fs.create_directory(
+                &PathUri::from_host_native_path(&directory)?,
+                CreateDirectoryOptions {
+                    recursive: true,
+                    follow_symlinks: true,
+                },
+                /*sandbox*/ None,
+            )
+            .await?;
+            fs.write_file(
+                &PathUri::from_host_native_path(&directory.join("SKILL.md"))?,
+                b"---\nname: jev-effort-skill\ndescription: Inspect a failing test.\n---\n\nUse the established debugging workflow.\n".to_vec(),
+                Default::default(),
+                /*sandbox*/ None,
+            )
+            .await?;
+            Ok(())
+        });
+    }
+    let test = builder.build_with_auto_env(&server).await?;
     if case == "budget" {
         test.codex
             .start_or_steer_turn(TurnInputRequest::user_input(vec![UserInput::Text {
@@ -144,6 +183,47 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
             unreachable!()
         };
         assert!(error.message.contains("Jev weekly token budget exhausted."));
+        wait_for_event(&test.codex, |event| {
+            matches!(event, EventMsg::TurnComplete(_))
+        })
+        .await;
+    } else if case == "agent" {
+        let agent_message = serde_json::from_value(json!({
+            "type": "agent_message", "author": "/root/worker", "recipient": "/root",
+            "content": [{"type": "input_text", "text": AGENT_EVIDENCE}],
+        }))?;
+        let submission = test
+            .codex
+            .start_turn_if_idle(TurnInputRequest::new(TurnInput::ResponseItem(
+                agent_message,
+            )))
+            .await?;
+        assert!(matches!(submission, StartIfIdleSubmission::Started { .. }));
+        wait_for_event(&test.codex, |event| {
+            matches!(event, EventMsg::TurnComplete(_))
+        })
+        .await;
+    } else if case == "skill" {
+        let skill_path = test
+            .config
+            .cwd
+            .join(".agents/skills/jev-effort-skill/SKILL.md");
+        let skill_path = skill_path
+            .canonicalize()
+            .unwrap_or(skill_path)
+            .to_path_buf();
+        test.codex
+            .start_or_steer_turn(TurnInputRequest::user_input(vec![
+                UserInput::Text {
+                    text: SKILL_TASK.to_string(),
+                    text_elements: Vec::new(),
+                },
+                UserInput::Skill {
+                    name: "jev-effort-skill".to_string(),
+                    path: skill_path,
+                },
+            ]))
+            .await?;
         wait_for_event(&test.codex, |event| {
             matches!(event, EventMsg::TurnComplete(_))
         })
@@ -170,12 +250,30 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
         return Ok(());
     }
     let requests = captured.expect("responses mock").requests();
-    assert_eq!(requests.len(), 2);
     assert!(
         requests
             .iter()
             .all(|request| request.body_json()["model"] == "gpt-6.1-sol")
     );
+    if case == "agent" {
+        assert_eq!((decisions.len(), requests.len()), (1, 1));
+        let evidence = decisions[0]["context"]["transcript"]["entries"]
+            .as_array()
+            .expect("entries");
+        assert!(
+            evidence
+                .iter()
+                .any(|entry| { entry["role"] == "assistant" && entry["text"] == AGENT_EVIDENCE })
+        );
+        assert_eq!(requests[0].inputs_of_type("agent_message").len(), 1);
+        let updates = requests[0].inputs_of_type("configuration_update");
+        assert_eq!(
+            updates.last().expect("effort update")["reasoning"]["effort"],
+            "high"
+        );
+        return Ok(());
+    }
+    assert_eq!(requests.len(), 2);
     let baseline = requests[0].body_json()["reasoning"]["effort"].clone();
     assert_ne!(baseline, json!("jev"));
     assert_eq!(requests[1].body_json()["reasoning"]["effort"], baseline);
@@ -183,13 +281,26 @@ async fn jev_effort_isolated_child() -> anyhow::Result<()> {
         assert_eq!(decisions.len(), 1);
     } else {
         assert_eq!(decisions.len(), 2);
-        assert!(
-            decisions[1]["context"]["transcript"]["entries"]
-                .as_array()
-                .expect("entries")
-                .iter()
-                .any(|entry| entry["role"] == "tool_output")
-        );
+        let evidence = decisions[1]["context"]["transcript"]["entries"]
+            .as_array()
+            .expect("entries");
+        assert!(evidence.iter().any(|entry| entry["role"] == "tool_output"));
+        if case == "skill" {
+            assert_eq!(
+                decisions
+                    .iter()
+                    .map(|decision| decision["task"].clone())
+                    .collect::<Vec<_>>(),
+                vec![json!(SKILL_TASK); 2],
+            );
+            assert!(
+                requests[0].message_input_texts("user").iter().any(|text| {
+                    text.contains("<skill>") && text.contains("<name>jev-effort-skill</name>")
+                }),
+                "the test must exercise a real injected skill message"
+            );
+            assert!(requests[0].has_content_kinds(&["skills.selected_skill_instructions"]));
+        }
         let latest = requests[1]
             .input()
             .into_iter()
