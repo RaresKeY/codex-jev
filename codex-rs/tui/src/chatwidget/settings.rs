@@ -537,6 +537,7 @@ impl ChatWidget {
             }
         }
 
+        self.sync_jev_effort(settings.effort.clone());
         settings.collaboration_mode.settings.model = settings.model;
         settings.collaboration_mode.settings.reasoning_effort = settings.effort;
         self.set_effective_collaboration_mode(settings.collaboration_mode);

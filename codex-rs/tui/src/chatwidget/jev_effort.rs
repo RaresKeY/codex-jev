@@ -52,9 +52,17 @@ impl ChatWidget {
 
     pub(super) fn apply_jev_effort(&mut self) {
         self.disable_jev_auto();
-        let effort = ReasoningEffortConfig::Custom("jev".to_string());
-        self.set_reasoning_effort(Some(effort.clone()));
-        self.set_plan_mode_reasoning_effort(Some(effort));
+        self.sync_jev_effort(Some(ReasoningEffortConfig::Custom("jev".to_string())));
+    }
+
+    pub(super) fn sync_jev_effort(&mut self, effort: Option<ReasoningEffortConfig>) {
+        // Server snapshots can lag the user's local Auto choice.
+        if is_jev_effort(effort.as_ref()) {
+            self.set_reasoning_effort(effort.clone());
+            self.set_plan_mode_reasoning_effort(effort);
+        } else {
+            self.clear_jev_effort(effort);
+        }
     }
 
     pub(crate) fn enable_jev_effort(&mut self) {

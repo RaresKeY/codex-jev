@@ -124,3 +124,115 @@ async fn manual_plan_effort_clears_jev_before_switching_from_default_to_plan() {
     );
     assert!(!chat.jev_effort_enabled());
 }
+
+#[tokio::test]
+async fn jev_effort_manual_server_setting_clears_both_mode_markers() {
+    for mode in [ModeKind::Default, ModeKind::Plan] {
+        let (mut chat, _sender, _events, _ops) = make_chatwidget_manual_with_sender().await;
+        chat.thread_id = Some(ThreadId::new());
+        chat.set_model("gpt-6.1-sol");
+        chat.enable_jev_effort();
+        chat.set_collaboration_mask(
+            collaboration_modes::mask_for_kind(chat.model_catalog.as_ref(), mode)
+                .expect("collaboration mode"),
+        );
+
+        let update = jev_settings_notification(&chat, ReasoningEffortConfig::Low);
+        chat.on_thread_settings_updated(update);
+        assert!(!chat.jev_effort_configured());
+        for next_mode in [ModeKind::Default, ModeKind::Plan] {
+            chat.set_collaboration_mask(
+                collaboration_modes::mask_for_kind(chat.model_catalog.as_ref(), next_mode)
+                    .expect("collaboration mode"),
+            );
+            assert_eq!(
+                (chat.jev_auto.enabled, chat.effective_reasoning_effort()),
+                (false, Some(ReasoningEffortConfig::Low)),
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn jev_effort_server_marker_restores_both_modes_preserving_auto_choice() {
+    for auto_enabled in [false, true] {
+        let (mut chat, _sender, _events, _ops) = make_chatwidget_manual_with_sender().await;
+        chat.thread_id = Some(ThreadId::new());
+        chat.set_model("gpt-6.1-sol");
+        if auto_enabled {
+            chat.enable_jev_auto();
+        }
+        let marker = ReasoningEffortConfig::Custom("jev".to_string());
+        let update = jev_settings_notification(&chat, marker.clone());
+        chat.on_thread_settings_updated(update);
+        assert_eq!(
+            (
+                chat.jev_auto.enabled,
+                chat.current_collaboration_mode().reasoning_effort(),
+                chat.config.plan_mode_reasoning_effort.clone(),
+            ),
+            (auto_enabled, Some(marker.clone()), Some(marker.clone())),
+        );
+        chat.set_collaboration_mask(
+            collaboration_modes::plan_mask(chat.model_catalog.as_ref())
+                .expect("plan collaboration mode"),
+        );
+        assert_eq!(chat.effective_reasoning_effort(), Some(marker));
+    }
+}
+
+#[tokio::test]
+async fn jev_effort_delayed_server_snapshots_preserve_later_auto_selection() {
+    let (mut chat, _sender, _events, _ops) = make_chatwidget_manual_with_sender().await;
+    chat.thread_id = Some(ThreadId::new());
+    chat.set_model("gpt-6.1-sol");
+    chat.enable_jev_effort();
+    let previous =
+        jev_settings_notification(&chat, ReasoningEffortConfig::Custom("jev".to_string()));
+    chat.set_reasoning_effort(Some(ReasoningEffortConfig::Medium));
+    chat.enable_jev_auto();
+    let current = jev_settings_notification(&chat, ReasoningEffortConfig::Medium);
+
+    chat.on_thread_settings_updated(previous);
+    assert!(chat.jev_auto.enabled);
+    chat.on_thread_settings_updated(current);
+    assert!(chat.jev_auto.enabled);
+    assert!(!chat.jev_effort_configured());
+    chat.set_collaboration_mask(
+        collaboration_modes::plan_mask(chat.model_catalog.as_ref())
+            .expect("plan collaboration mode"),
+    );
+    assert_eq!(
+        chat.effective_reasoning_effort(),
+        Some(ReasoningEffortConfig::Medium),
+    );
+}
+
+fn jev_settings_notification(
+    chat: &ChatWidget,
+    effort: ReasoningEffortConfig,
+) -> codex_app_server_protocol::ThreadSettingsUpdatedNotification {
+    let mut collaboration_mode = chat.effective_collaboration_mode();
+    collaboration_mode.settings.reasoning_effort = Some(effort.clone());
+    codex_app_server_protocol::ThreadSettingsUpdatedNotification {
+        thread_id: chat.thread_id.expect("thread").to_string(),
+        thread_settings: codex_app_server_protocol::ThreadSettings {
+            disabled_plugin_ids: Vec::new(),
+            cwd: chat.config.cwd.clone(),
+            approval_policy: codex_app_server_protocol::AskForApproval::Never,
+            approvals_reviewer: codex_app_server_protocol::ApprovalsReviewer::User,
+            sandbox_policy: codex_app_server_protocol::SandboxPolicy::ReadOnly {
+                network_access: false,
+            },
+            active_permission_profile: None,
+            model: chat.current_model().to_string(),
+            model_provider: chat.config.model_provider_id.clone(),
+            service_tier: None,
+            effort: Some(effort),
+            summary: None,
+            collaboration_mode,
+            multi_agent_mode: Default::default(),
+            personality: None,
+        },
+    }
+}
